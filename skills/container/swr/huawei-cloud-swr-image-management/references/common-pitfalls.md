@@ -1,5 +1,6 @@
 # Common Pitfalls & Solutions
 
+<!-- Updated: 2026-07-29 -->
 This document contains detailed troubleshooting guides for common issues encountered when using the Huawei Cloud SWR Image Management skill.
 
 ## Pitfall 1: Invalid Namespace Name Format
