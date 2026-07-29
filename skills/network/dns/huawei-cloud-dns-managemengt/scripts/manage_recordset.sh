@@ -207,7 +207,8 @@ find_recordset_id() {
 records_to_json() {
     local records_str="$1"
     # 将空格分隔的值转为 jq JSON 数组
-    echo "$records_str" | tr ' ' '\n' | jq -R -c '[.[] | select(length > 0)] | map(gsub("^\"|\"$"; "\""))'
+    # -R 逐行读取为字符串, -s slurp 为单个字符串, split("\n") 分割为数组
+    echo "$records_str" | tr ' ' '\n' | jq -R -s -c 'split("\n") | map(select(length > 0))'
 }
 
 # ── 主逻辑 ────────────────────────────────────────────────────────

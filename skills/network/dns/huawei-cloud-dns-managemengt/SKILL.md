@@ -1,6 +1,6 @@
 ---
-id: huawei-cloud-sg-dns-managemengt
-name: huawei-cloud-sg-dns-managemengt
+id: huawei-cloud-dns-managemengt
+name: huawei-cloud-dns-managemengt
 tags: [huawei-cloud, dns, domain-resolution, record-set, zone-management, dynamic-update, automation]
 description: |
   Huawei Cloud DNS domain resolution dynamic management skill using hcloud CLI (KooCLI).
