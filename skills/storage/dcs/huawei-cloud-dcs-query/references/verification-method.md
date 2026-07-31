@@ -16,11 +16,16 @@ This checks all items in the Huawei Cloud Skill Specification.
 bash scripts/test-cli-commands.sh skills/huawei-cloud-dcs-query cli
 ```
 
-For instance-specific tests, set `DCS_INSTANCE_ID`:
+For instance-specific tests, set `DCS_INSTANCE_ID` (or fill `instance_id` in `templates/test-vars.json`):
 
 ```bash
 DCS_INSTANCE_ID=<instance_id> bash scripts/test-cli-commands.sh skills/huawei-cloud-dcs-query cli
 ```
+
+Test parameters are read from `templates/test-vars.json` (region, instance_id, start_time, end_time, migration_task_id). Environment variables `DCS_REGION`, `DCS_INSTANCE_ID`, `DCS_START_TIME`, `DCS_END_TIME`,
+`DCS_MIGRATION_TASK_ID` override them. Placeholder values such as `{instance_id}` in the JSON are treated as unset.
+
+The JSON also documents all 25 test cases used by `test-cli-commands.sh`.
 
 ### SDK Mode (Fallback)
 
@@ -48,6 +53,15 @@ bash scripts/test-cli-commands.sh skills/huawei-cloud-dcs-query sdk
 | 14 | Show instance tags | `hcloud DCS ShowTags --cli-region=cn-north-4 --instance_id=<instance_id>` |
 | 15 | List migration tasks | `hcloud DCS ListMigrationTask --cli-region=cn-north-4 --limit=1` |
 | 16 | List slow logs | `hcloud DCS ListSlowlog --cli-region=cn-north-4 --instance_id=<instance_id> --start_time=1598803200000 --end_time=1599494399000 --limit=2` |
+| 17 | List config histories | `hcloud DCS ListConfigHistories --cli-region=cn-north-4 --instance_id=<instance_id> --limit=3` |
+| 18 | List Redis run logs | `hcloud DCS ListRedislog --cli-region=cn-north-4 --instance_id=<instance_id> --log_type=run --limit=3` |
+| 19 | List big key scan tasks | `hcloud DCS ListBigkeyScanTasks --cli-region=cn-north-4 --instance_id=<instance_id> --limit=3` |
+| 20 | Show big key autoscan config | `hcloud DCS ShowBigkeyAutoscanConfig --cli-region=cn-north-4 --instance_id=<instance_id>` |
+| 21 | List hot key scan tasks | `hcloud DCS ListHotKeyScanTasks --cli-region=cn-north-4 --instance_id=<instance_id> --limit=3` |
+| 22 | Show hot key autoscan config | `hcloud DCS ShowHotkeyAutoscanConfig --cli-region=cn-north-4 --instance_id=<instance_id>` |
+| 23 | List diagnosis tasks | `hcloud DCS ListDiagnosisTasks --cli-region=cn-north-4 --instance_id=<instance_id> --limit=3` |
+| 24 | List group replication info | `hcloud DCS ListGroupReplicationInfo --cli-region=cn-north-4 --instance_id=<instance_id>` |
+| 25 | Show migration task | `hcloud DCS ShowMigrationTask --cli-region=cn-north-4 --task_id=<task_id>` |
 
 ## Expected Results
 

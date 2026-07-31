@@ -3,6 +3,7 @@
   "instance_id": "{instance_id}",
   "start_time": "1598803200000",
   "end_time": "1893455999000",
+  "migration_task_id": "{migration_task_id}",
   "test_cases": [
     {
       "id": "TC-01",
@@ -48,51 +49,111 @@
     },
     {
       "id": "TC-08",
+      "name": "List Tenant Tags",
+      "command": "hcloud DCS ListTagsOfTenant --cli-region=cn-north-4",
+      "expected": "HTTP 200 with tag list or empty list"
+    },
+    {
+      "id": "TC-09",
       "name": "Show Instance (requires instance_id)",
       "command": "hcloud DCS ShowInstance --cli-region=cn-north-4 --instance_id={instance_id}",
       "expected": "HTTP 200 with instance details"
     },
     {
-      "id": "TC-09",
+      "id": "TC-10",
       "name": "List Instance Configurations (requires instance_id)",
       "command": "hcloud DCS ListConfigurations --cli-region=cn-north-4 --instance_id={instance_id}",
       "expected": "HTTP 200 with configuration parameter list"
     },
     {
-      "id": "TC-10",
+      "id": "TC-11",
       "name": "List Backup Records (requires instance_id)",
       "command": "hcloud DCS ListBackupRecords --cli-region=cn-north-4 --instance_id={instance_id} --limit=1",
       "expected": "HTTP 200 with backup list or empty list"
     },
     {
-      "id": "TC-11",
+      "id": "TC-12",
       "name": "List Restore Records (requires instance_id)",
       "command": "hcloud DCS ListRestoreRecords --cli-region=cn-north-4 --instance_id={instance_id} --limit=1",
       "expected": "HTTP 200 with restore list or empty list"
     },
     {
-      "id": "TC-12",
+      "id": "TC-13",
       "name": "List ACL Accounts (requires instance_id)",
       "command": "hcloud DCS ListAclAccounts --cli-region=cn-north-4 --instance_id={instance_id}",
       "expected": "HTTP 200 with ACL account list"
     },
     {
-      "id": "TC-13",
+      "id": "TC-14",
       "name": "Show IP Whitelist (requires instance_id)",
       "command": "hcloud DCS ShowIpWhitelist --cli-region=cn-north-4 --instance_id={instance_id}",
       "expected": "HTTP 200 with IP whitelist config"
     },
     {
-      "id": "TC-14",
+      "id": "TC-15",
       "name": "Show Instance Tags (requires instance_id)",
       "command": "hcloud DCS ShowTags --cli-region=cn-north-4 --instance_id={instance_id}",
       "expected": "HTTP 200 with tag list or empty list"
     },
     {
-      "id": "TC-15",
+      "id": "TC-16",
       "name": "List Slow Logs (requires instance_id)",
       "command": "hcloud DCS ListSlowlog --cli-region=cn-north-4 --instance_id={instance_id} --start_time={start_time} --end_time={end_time} --limit=2",
       "expected": "HTTP 200 with slow log entries or empty list"
+    },
+    {
+      "id": "TC-17",
+      "name": "List Config Histories (requires instance_id)",
+      "command": "hcloud DCS ListConfigHistories --cli-region=cn-north-4 --instance_id={instance_id} --limit=3",
+      "expected": "HTTP 200 with config history list or empty list"
+    },
+    {
+      "id": "TC-18",
+      "name": "List Redis Run Logs (requires instance_id)",
+      "command": "hcloud DCS ListRedislog --cli-region=cn-north-4 --instance_id={instance_id} --log_type=run --limit=3",
+      "expected": "HTTP 200 with Redis run log list or empty list"
+    },
+    {
+      "id": "TC-19",
+      "name": "List Big Key Scan Tasks (requires instance_id)",
+      "command": "hcloud DCS ListBigkeyScanTasks --cli-region=cn-north-4 --instance_id={instance_id} --limit=3",
+      "expected": "HTTP 200 with big key scan task list or empty list"
+    },
+    {
+      "id": "TC-20",
+      "name": "Show Big Key Autoscan Config (requires instance_id)",
+      "command": "hcloud DCS ShowBigkeyAutoscanConfig --cli-region=cn-north-4 --instance_id={instance_id}",
+      "expected": "HTTP 200 with big key autoscan config"
+    },
+    {
+      "id": "TC-21",
+      "name": "List Hot Key Scan Tasks (requires instance_id)",
+      "command": "hcloud DCS ListHotKeyScanTasks --cli-region=cn-north-4 --instance_id={instance_id} --limit=3",
+      "expected": "HTTP 200 with hot key scan task list or empty list"
+    },
+    {
+      "id": "TC-22",
+      "name": "Show Hot Key Autoscan Config (requires instance_id)",
+      "command": "hcloud DCS ShowHotkeyAutoscanConfig --cli-region=cn-north-4 --instance_id={instance_id}",
+      "expected": "HTTP 200 with hot key autoscan config"
+    },
+    {
+      "id": "TC-23",
+      "name": "List Diagnosis Tasks (requires instance_id)",
+      "command": "hcloud DCS ListDiagnosisTasks --cli-region=cn-north-4 --instance_id={instance_id} --limit=3",
+      "expected": "HTTP 200 with diagnosis task list or empty list"
+    },
+    {
+      "id": "TC-24",
+      "name": "List Group Replication Info (requires instance_id)",
+      "command": "hcloud DCS ListGroupReplicationInfo --cli-region=cn-north-4 --instance_id={instance_id}",
+      "expected": "HTTP 200 with group replication info"
+    },
+    {
+      "id": "TC-25",
+      "name": "Show Migration Task (requires migration_task_id)",
+      "command": "hcloud DCS ShowMigrationTask --cli-region=cn-north-4 --task_id={migration_task_id}",
+      "expected": "HTTP 200 with migration task details"
     }
   ]
 }

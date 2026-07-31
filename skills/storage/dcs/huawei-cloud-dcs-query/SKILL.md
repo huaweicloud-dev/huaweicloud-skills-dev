@@ -131,6 +131,7 @@ Agent → hcloud CLI (primary) → Huawei Cloud DCS API
 When CLI is unavailable, use the Python SDK:
 
 ```python
+import os
 from huaweicloudsdkcore.auth.credentials import BasicCredentials
 from huaweicloudsdkdcs.v2.region.dcs_region import DcsRegion
 from huaweicloudsdkdcs.v2 import dcs_client
