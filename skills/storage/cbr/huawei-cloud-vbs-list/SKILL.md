@@ -140,14 +140,22 @@ python3 scripts/list_vbs_backups.py --region cn-north-4 --limit 20 --offset 0
 
 > **Before executing any task, confirm the following parameters with the user. Guessing is prohibited.**
 
+> **Two parameter conventions — do not mix:**
+>
+> - **CLI (hcloud):** KooCLI parameters use underscores and the `--param=value` form, e.g.
+>   `--resource_type=OS::Nova::Server`, `--vault_id=<id>`, `--start_time=...`.
+> - **SDK script (`scripts/list_vbs_backups.py`):** the script's argparse interface uses hyphens, e.g.
+>   `--resource-type OS::Nova::Server`, `--vault-id <id>`, `--start-time ...`. Using the underscore
+>   form against the script raises `unrecognized arguments`.
+
 | Parameter | Required/Optional | Description | Default |
 |-----------|------------------|-------------|---------|
 | `{region}` | Required | Huawei Cloud region (e.g., `cn-north-4`); must be provided or resolved from the profile | - |
 | `--status` | Optional | Filter by backup status | - |
 | `--name` | Optional | Filter by backup name (fuzzy) | - |
-| `--resource_type` | Optional | Filter by resource type (`OS::Cinder::Volume` / `OS::Nova::Server`) | - |
-| `--vault_id` | Optional | Filter by vault ID | - |
-| `--start_time` / `--end_time` | Optional | Time range filter in `%YYYY-%mm-%ddT%HH:%MM:%SSZ` format | - |
+| `--resource_type` (CLI) / `--resource-type` (script) | Optional | Filter by resource type (`OS::Cinder::Volume` / `OS::Nova::Server`) | - |
+| `--vault_id` (CLI) / `--vault-id` (script) | Optional | Filter by vault ID | - |
+| `--start_time` / `--end_time` (CLI) / `--start-time` / `--end-time` (script) | Optional | Time range filter in `%YYYY-%mm-%ddT%HH:%MM:%SSZ` format | - |
 | `--limit` | Optional | Page size | 50 |
 | `--offset` | Optional | Page offset | 0 |
 

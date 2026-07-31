@@ -36,7 +36,7 @@ def main():
 
     access_key_id, secret_value = load_credentials()
     if not access_key_id or not secret_value:
-        print("ERROR: AK/SK not found. Set HUAWEICLOUD_SDK_AK and HUAWEICLOUD_SDK_SK "
+        print("ERROR: AK/SK not found or empty. Set HUAWEICLOUD_SDK_AK and HUAWEICLOUD_SDK_SK "
               "(or HUAWEI_ACCESS_KEY/HUAWEI_SECRET_KEY) environment variables.",
               file=sys.stderr)
         sys.exit(1)
@@ -50,10 +50,17 @@ def main():
               file=sys.stderr)
         sys.exit(1)
 
+    try:
+        region = CbrRegion.value_of(args.region)
+    except Exception as e:
+        print(f"ERROR: invalid region '{args.region}'. Use a valid Huawei Cloud region, "
+              f"e.g. cn-north-4.", file=sys.stderr)
+        sys.exit(1)
+
     credentials = BasicCredentials(access_key_id, secret_value)
     client = CbrClient.new_builder() \
         .with_credentials(credentials) \
-        .with_region(CbrRegion.value_of(args.region)) \
+        .with_region(region) \
         .build()
 
     request = ListBackupsRequest(
@@ -89,7 +96,7 @@ def main():
         print(f"{str(b.id):<38} {str(b.name or ''):<40} {str(b.status or ''):<16} "
               f"{str(b.resource_type or ''):<20} {str(b.created_at or '')}")
     print(f"\nTotal: {len(backups)} (page offset={args.offset}, limit={args.limit}, "
-          f"matched_count={response.count})")
+          f"matched_count={response.count or 0})")
 
 
 if __name__ == "__main__":
