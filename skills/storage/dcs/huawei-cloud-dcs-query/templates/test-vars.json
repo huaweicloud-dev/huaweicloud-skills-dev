@@ -1,0 +1,98 @@
+{
+  "region": "cn-north-4",
+  "instance_id": "{instance_id}",
+  "start_time": "1598803200000",
+  "end_time": "1893455999000",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List DCS Instances",
+      "command": "hcloud DCS ListInstances --cli-region=cn-north-4 --limit=1",
+      "expected": "HTTP 200 with instance list or empty list"
+    },
+    {
+      "id": "TC-02",
+      "name": "List Available Zones",
+      "command": "hcloud DCS ListAvailableZones --cli-region=cn-north-4",
+      "expected": "HTTP 200 with availability zone list"
+    },
+    {
+      "id": "TC-03",
+      "name": "List Maintenance Windows",
+      "command": "hcloud DCS ListMaintenanceWindows --cli-region=cn-north-4",
+      "expected": "HTTP 200 with maintenance window list"
+    },
+    {
+      "id": "TC-04",
+      "name": "Show Tenant Quota",
+      "command": "hcloud DCS ShowQuotaOfTenant --cli-region=cn-north-4",
+      "expected": "HTTP 200 with quota info"
+    },
+    {
+      "id": "TC-05",
+      "name": "List Instances In Different Status",
+      "command": "hcloud DCS ListNumberOfInstancesInDifferentStatus --cli-region=cn-north-4",
+      "expected": "HTTP 200 with status counts"
+    },
+    {
+      "id": "TC-06",
+      "name": "List Running Instance Statistics",
+      "command": "hcloud DCS ListStatisticsOfRunningInstances --cli-region=cn-north-4",
+      "expected": "HTTP 200 with running instance statistics"
+    },
+    {
+      "id": "TC-07",
+      "name": "List Migration Tasks",
+      "command": "hcloud DCS ListMigrationTask --cli-region=cn-north-4 --limit=1",
+      "expected": "HTTP 200 with migration task list or empty list"
+    },
+    {
+      "id": "TC-08",
+      "name": "Show Instance (requires instance_id)",
+      "command": "hcloud DCS ShowInstance --cli-region=cn-north-4 --instance_id={instance_id}",
+      "expected": "HTTP 200 with instance details"
+    },
+    {
+      "id": "TC-09",
+      "name": "List Instance Configurations (requires instance_id)",
+      "command": "hcloud DCS ListConfigurations --cli-region=cn-north-4 --instance_id={instance_id}",
+      "expected": "HTTP 200 with configuration parameter list"
+    },
+    {
+      "id": "TC-10",
+      "name": "List Backup Records (requires instance_id)",
+      "command": "hcloud DCS ListBackupRecords --cli-region=cn-north-4 --instance_id={instance_id} --limit=1",
+      "expected": "HTTP 200 with backup list or empty list"
+    },
+    {
+      "id": "TC-11",
+      "name": "List Restore Records (requires instance_id)",
+      "command": "hcloud DCS ListRestoreRecords --cli-region=cn-north-4 --instance_id={instance_id} --limit=1",
+      "expected": "HTTP 200 with restore list or empty list"
+    },
+    {
+      "id": "TC-12",
+      "name": "List ACL Accounts (requires instance_id)",
+      "command": "hcloud DCS ListAclAccounts --cli-region=cn-north-4 --instance_id={instance_id}",
+      "expected": "HTTP 200 with ACL account list"
+    },
+    {
+      "id": "TC-13",
+      "name": "Show IP Whitelist (requires instance_id)",
+      "command": "hcloud DCS ShowIpWhitelist --cli-region=cn-north-4 --instance_id={instance_id}",
+      "expected": "HTTP 200 with IP whitelist config"
+    },
+    {
+      "id": "TC-14",
+      "name": "Show Instance Tags (requires instance_id)",
+      "command": "hcloud DCS ShowTags --cli-region=cn-north-4 --instance_id={instance_id}",
+      "expected": "HTTP 200 with tag list or empty list"
+    },
+    {
+      "id": "TC-15",
+      "name": "List Slow Logs (requires instance_id)",
+      "command": "hcloud DCS ListSlowlog --cli-region=cn-north-4 --instance_id={instance_id} --start_time={start_time} --end_time={end_time} --limit=2",
+      "expected": "HTTP 200 with slow log entries or empty list"
+    }
+  ]
+}
