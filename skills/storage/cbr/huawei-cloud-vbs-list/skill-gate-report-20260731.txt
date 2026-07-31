@@ -19,10 +19,10 @@ Date: 2026-07-31
 4) gitleaks ..................... PASS (no leaks found, ~28.21 KB scanned)
    - No API keys, passwords, private keys, or tokens detected.
 
-5) Dependency security .......... NOT EVALUATED
-   - pip-audit / safety unavailable in this environment (PEP 668 + network
-     restrictions). Reported as a missing dependency, not marked passed.
-     The skill depends only on huaweicloudsdkcbr (vendor-pinned SDK).
+5) Dependency security .......... PASS
+   - pip-audit 2.10.1 executed (2026-07-31, via `pip-audit -r <requirements> --no-deps --disable-pip`).
+   - Scanned dependencies: huaweicloudsdkcbr==3.1.208, huaweicloudsdkcore==3.1.208.
+   - Result: "No known vulnerabilities found".
 
 VERDICT: PASS (1 accepted warning)
 All CRITICAL/HIGH checks green. No ERROR or CRITICAL findings required fixing.
