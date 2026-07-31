@@ -10,7 +10,7 @@
 | User filters by resource type | Only backups of that resource type are returned |
 | No backups exist | Skill reports "no backups found" / empty list without error |
 | CLI unavailable | Skill falls back to the CBR SDK script and still returns results |
-| Permission denied (403) | Skill points the user to `references/iam-policies.md` (`cbr:backup:list`) |
+| Permission denied (403) | Skill points the user to `references/iam-policies.md` (`cbr:backups:list`) |
 
 ## Error Patterns (FAIL / Must Avoid)
 

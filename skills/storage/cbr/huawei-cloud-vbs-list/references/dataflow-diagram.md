@@ -15,7 +15,7 @@ flowchart TD
 
     CLI --> AUTH{Huawei Cloud Auth\nAK/SK via profile/env}
     AUTH -->|200| API["CBR ListBackups API\nGET /v3/{project_id}/backups"]
-    AUTH -->|403| PERM["Check IAM cbr:backup:list\nsee references/iam-policies.md"]
+    AUTH -->|403| PERM["Check IAM cbr:backups:list\nsee references/iam-policies.md"]
 
     SDK --> SDKAPI["huaweicloudsdkcbr list_backups\n(v3 path via SDK client)"]
 

@@ -20,7 +20,7 @@ Expected: a profile exists with `mode: AKSK` and a non-empty `accessKeyId`.
 
 ### 1.3 IAM Permission
 
-Verify the user can call `cbr:backup:list`. See [iam-policies.md](iam-policies.md).
+Verify the user can call `cbr:backups:list`. See [iam-policies.md](iam-policies.md).
 
 ## 2. Functional Verification
 

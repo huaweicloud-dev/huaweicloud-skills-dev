@@ -53,7 +53,7 @@ The IAM user must be granted the CBR read permission. See [references/iam-polici
 
 **Minimum required permissions:**
 
-- `cbr:backup:list` — List backups
+- `cbr:backups:list` — List backups
 
 ## Core Workflows
 

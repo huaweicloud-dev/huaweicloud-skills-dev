@@ -11,7 +11,7 @@ The IAM user (or the account's user group) must have at least the following perm
     {
       "Effect": "Allow",
       "Action": [
-        "cbr:backup:list"
+        "cbr:backups:list"
       ],
       "Resource": [
         "*"
@@ -23,10 +23,10 @@ The IAM user (or the account's user group) must have at least the following perm
 
 ## Least-Privilege Notes
 
-- The `huawei-cloud-vbs-list` skill is **read-only**: it only lists backups. Granting `cbr:backup:list` is sufficient.
-- Do **not** grant write/delete actions (`cbr:backup:delete`, `cbr:backup:restore`, `cbr:vault:create`, etc.) when the only goal is listing backups.
+- The `huawei-cloud-vbs-list` skill is **read-only**: it only lists backups. Granting `cbr:backups:list` is sufficient.
+- Do **not** grant write/delete actions (`cbr:backups:delete`, `cbr:backups:restore`, `cbr:vaults:create`, etc.) when the only goal is listing backups.
 - If the user also needs vault / policy visibility (e.g., resolving a `vault_id` to a vault name), optionally add:
-  - `cbr:vault:list`
+  - `cbr:vaults:list`
 
 ## Recommended Policy for Common Use
 
@@ -37,8 +37,8 @@ The IAM user (or the account's user group) must have at least the following perm
     {
       "Effect": "Allow",
       "Action": [
-        "cbr:backup:list",
-        "cbr:vault:list"
+        "cbr:backups:list",
+        "cbr:vaults:list"
       ],
       "Resource": [
         "*"
@@ -57,5 +57,5 @@ The IAM user (or the account's user group) must have at least the following perm
 ## Cross-Check with CLI/SDK
 
 The Huawei Cloud CBR `ListBackups` API (`GET /v3/{project_id}/backups`) maps to the IAM action
-`cbr:backup:list`. If you receive a 403 "Insufficient permissions" error when running the command,
+`cbr:backups:list`. If you receive a 403 "Insufficient permissions" error when running the command,
 verify this policy is attached.
