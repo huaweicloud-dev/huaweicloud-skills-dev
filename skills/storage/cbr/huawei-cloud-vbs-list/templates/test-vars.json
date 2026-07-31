@@ -1,0 +1,46 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "CLI: list all backups",
+      "command": "hcloud CBR ListBackups --cli-region=cn-north-4 --limit=5",
+      "expected": "JSON with backups array and count field; exit 0"
+    },
+    {
+      "id": "TC-02",
+      "name": "CLI: filter by status",
+      "command": "hcloud CBR ListBackups --cli-region=cn-north-4 --limit=5 --status=available",
+      "expected": "backups all have status=available; exit 0"
+    },
+    {
+      "id": "TC-03",
+      "name": "CLI: filter by name",
+      "command": "hcloud CBR ListBackups --cli-region=cn-north-4 --limit=5 --name=backup_for_image",
+      "expected": "backups whose name contains backup_for_image; exit 0"
+    },
+    {
+      "id": "TC-04",
+      "name": "CLI: filter by resource type",
+      "command": "hcloud CBR ListBackups --cli-region=cn-north-4 --limit=5 --resource_type=OS::Nova::Server",
+      "expected": "backups all have resource_type=OS::Nova::Server; exit 0"
+    },
+    {
+      "id": "TC-05",
+      "name": "CLI: time range filter",
+      "command": "hcloud CBR ListBackups --cli-region=cn-north-4 --limit=5 --start_time=2026-01-01T00:00:00Z --end_time=2026-12-31T23:59:59Z",
+      "expected": "backups within the time range; exit 0"
+    },
+    {
+      "id": "TC-06",
+      "name": "SDK: list backups via script",
+      "command": "python3 scripts/list_vbs_backups.py --region cn-north-4 --limit=5",
+      "expected": "summary table printed; exit 0"
+    },
+    {
+      "id": "TC-07",
+      "name": "SDK: filter via script",
+      "command": "python3 scripts/list_vbs_backups.py --region cn-north-4 --limit=5 --resource-type OS::Nova::Server --status available",
+      "expected": "summary table filtered; exit 0"
+    }
+  ]
+}

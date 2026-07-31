@@ -1,0 +1,28 @@
+Huawei Cloud Skill Security Audit Report
+Skill: huawei-cloud-vbs-list
+Date: 2026-07-31
+====================================================================
+
+1) skillcheck ................... PASS (1 passed, 0 failed)
+   - WARNING disclosure.metadata-budget: frontmatter ~225 tokens (>~100).
+     Accepted: description carries the feature summary + required trigger
+     words per Huawei Cloud Skill Specification.
+   - No CRITICAL / ERROR findings.
+
+2) markdownlint-cli2 ............ PASS (0 issues in 6 files)
+   - Config: .markdownlint.json (repo-consistent)
+
+3) hwcloud-spec (validate-skill.sh)  PASS (PASS: 32  FAIL: 0  WARN: 0)
+   - Structure, frontmatter, required sections, size/file-count/line-count,
+     extension allowlist, credential-scan, cross-skill references, one-PR-one-skill.
+
+4) gitleaks ..................... PASS (no leaks found, ~28.21 KB scanned)
+   - No API keys, passwords, private keys, or tokens detected.
+
+5) Dependency security .......... PASS
+   - pip-audit 2.10.1 executed (2026-07-31, via `pip-audit -r <requirements> --no-deps --disable-pip`).
+   - Scanned dependencies: huaweicloudsdkcbr==3.1.208, huaweicloudsdkcore==3.1.208.
+   - Result: "No known vulnerabilities found".
+
+VERDICT: PASS (1 accepted warning)
+All CRITICAL/HIGH checks green. No ERROR or CRITICAL findings required fixing.
