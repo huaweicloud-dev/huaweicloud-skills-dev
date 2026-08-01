@@ -1,0 +1,29 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "ListUsers (full)",
+      "command": "hcloud IAM KeystoneListUsers --cli-region=cn-north-4",
+      "expected": "User number: N, users with id/name/enabled/description"
+    },
+    {
+      "id": "TC-02",
+      "name": "ListUsers (JSON output)",
+      "command": "hcloud IAM KeystoneListUsers --cli-region=cn-north-4 --cli-output=json",
+      "expected": "JSON array of users"
+    },
+    {
+      "id": "TC-03",
+      "name": "ListUsers filtered by name",
+      "command": "hcloud IAM KeystoneListUsers --cli-region=cn-north-4 --name=<user-name>",
+      "expected": "Only users matching the name"
+    },
+    {
+      "id": "TC-04",
+      "name": "ListUsers filtered by domain_id",
+      "command": "hcloud IAM KeystoneListUsers --cli-region=cn-north-4 --domain_id=<domain-id>",
+      "expected": "Only users of the domain"
+    }
+  ]
+}
+

@@ -1,0 +1,28 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "ListRoles (full)",
+      "command": "hcloud IAM KeystoneListPermissions --cli-region=cn-north-4",
+      "expected": "Role number: N, roles with id/display_name/name/catalog/type"
+    },
+    {
+      "id": "TC-02",
+      "name": "ListRoles (JSON output)",
+      "command": "hcloud IAM KeystoneListPermissions --cli-region=cn-north-4 --cli-output=json",
+      "expected": "JSON array of roles"
+    },
+    {
+      "id": "TC-03",
+      "name": "ListRoles filtered by permission_type",
+      "command": "hcloud IAM KeystoneListPermissions --cli-region=cn-north-4 --permission_type=role",
+      "expected": "Only system-defined roles"
+    },
+    {
+      "id": "TC-04",
+      "name": "ListRoles filtered by catalog",
+      "command": "hcloud IAM KeystoneListPermissions --cli-region=cn-north-4 --permission_type=role --catalog=CCE",
+      "expected": "Only roles of the CCE catalog"
+    }
+  ]
+}
