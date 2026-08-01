@@ -1,0 +1,34 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "ListProjects (full)",
+      "command": "hcloud IAM KeystoneListProjects --cli-region=cn-north-4",
+      "expected": "Project number: N, projects with id/name/domain_id/enabled"
+    },
+    {
+      "id": "TC-02",
+      "name": "ListProjects (JSON output)",
+      "command": "hcloud IAM KeystoneListProjects --cli-region=cn-north-4 --cli-output=json",
+      "expected": "JSON array of projects"
+    },
+    {
+      "id": "TC-03",
+      "name": "ListProjects filtered by name",
+      "command": "hcloud IAM KeystoneListProjects --cli-region=cn-north-4 --name=<project-name>",
+      "expected": "Only projects matching the name"
+    },
+    {
+      "id": "TC-04",
+      "name": "ListProjects filtered by domain_id",
+      "command": "hcloud IAM KeystoneListProjects --cli-region=cn-north-4 --domain_id=<domain-id>",
+      "expected": "Only projects of the domain"
+    },
+    {
+      "id": "TC-05",
+      "name": "ListProjects with pagination",
+      "command": "hcloud IAM KeystoneListProjects --cli-region=cn-north-4 --page=1 --per_page=50",
+      "expected": "Paged project list (max 50 per page)"
+    }
+  ]
+}
