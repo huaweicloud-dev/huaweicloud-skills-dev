@@ -1,0 +1,34 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "ListSecurityGroups (full)",
+      "command": "hcloud VPC ListSecurityGroups --cli-region=cn-north-4",
+      "expected": "Security group number: N, groups with id/name/description"
+    },
+    {
+      "id": "TC-02",
+      "name": "ListSecurityGroups (JSON output)",
+      "command": "hcloud VPC ListSecurityGroups --cli-region=cn-north-4 --cli-output=json",
+      "expected": "JSON array of security groups"
+    },
+    {
+      "id": "TC-03",
+      "name": "ListSecurityGroups filtered by name",
+      "command": "hcloud VPC ListSecurityGroups --cli-region=cn-north-4 --name.1=<sg-name>",
+      "expected": "Only security groups matching the name"
+    },
+    {
+      "id": "TC-04",
+      "name": "ListSecurityGroups filtered by id",
+      "command": "hcloud VPC ListSecurityGroups --cli-region=cn-north-4 --id.1=<sg-id>",
+      "expected": "Only the security group with the given id"
+    },
+    {
+      "id": "TC-05",
+      "name": "ListSecurityGroups with limit",
+      "command": "hcloud VPC ListSecurityGroups --cli-region=cn-north-4 --limit=10",
+      "expected": "At most 10 security groups"
+    }
+  ]
+}
