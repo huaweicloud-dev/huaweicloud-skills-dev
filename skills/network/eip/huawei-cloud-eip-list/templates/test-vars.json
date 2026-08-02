@@ -1,0 +1,34 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "ListPublicips (full)",
+      "command": "hcloud EIP ListPublicips --cli-region=cn-north-4",
+      "expected": "EIP number: N, eips with id/public_ip_address/status"
+    },
+    {
+      "id": "TC-02",
+      "name": "ListPublicips (JSON output)",
+      "command": "hcloud EIP ListPublicips --cli-region=cn-north-4 --cli-output=json",
+      "expected": "JSON array of EIPs"
+    },
+    {
+      "id": "TC-03",
+      "name": "ListPublicips filtered by id",
+      "command": "hcloud EIP ListPublicips --cli-region=cn-north-4 --id.1=<eip-id>",
+      "expected": "Only the EIP with the given id"
+    },
+    {
+      "id": "TC-04",
+      "name": "ListPublicips filtered by ip_version",
+      "command": "hcloud EIP ListPublicips --cli-region=cn-north-4 --ip_version.1=4",
+      "expected": "Only IPv4 EIPs"
+    },
+    {
+      "id": "TC-05",
+      "name": "ListPublicips/v2 with limit",
+      "command": "hcloud EIP ListPublicips/v2 --cli-region=cn-north-4 --limit=10",
+      "expected": "At most 10 EIPs"
+    }
+  ]
+}
