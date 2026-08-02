@@ -220,9 +220,10 @@ def bucket_size_sdk(client, bucket):
 def total_size_sdk(client, buckets, default_region):
     """Sum sizes of buckets via the SDK. Buckets may live in different regions;
     a client bound to the bucket's own location is used when known. Per-bucket
-    failures are skipped with a warning."""
+    failures are skipped with a warning (friendly mapped, no raw traceback)."""
     total = 0
     failed = 0
+    errors = []
     for entry in buckets:
         if isinstance(entry, tuple):
             name, loc = entry
@@ -237,8 +238,13 @@ def total_size_sdk(client, buckets, default_region):
             total += bucket_size_sdk(c, name)
         except Exception as exc:
             failed += 1
-            print("警告：查询桶 %s 失败：%s" % (name, exc), file=sys.stderr)
-    if failed and failed == len(buckets) and total == 0:
+            errors.append(str(exc))
+            if len(buckets) > 1:
+                print("警告：%s" % _friendly_error(name, str(exc)), file=sys.stderr)
+    if failed == len(buckets) and total == 0:
+        if len(buckets) == 1:
+            raise RuntimeError(_friendly_error(buckets[0][0] if isinstance(buckets[0], tuple) else buckets[0],
+                                              errors[0] if errors else "查询桶失败"))
         raise RuntimeError("所有桶均查询失败，无法汇总总大小。请检查凭证配置与桶权限。")
     return total
 
