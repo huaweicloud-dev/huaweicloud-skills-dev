@@ -72,13 +72,36 @@ def list_buckets_cli():
     return re.findall(r"obs://([^\s/]+)", out)
 
 
+def _parse_cli_size(text):
+    """Parse the '[DU] Total bucket size: N[unit]' line into bytes.
+
+    Tolerant of obsutil output variations: a bare integer (e.g. `5002295`),
+    an integer with a 'B' suffix (`5002295B`), or a human-readable value with
+    a unit suffix (`4.77MB`). Returns None if the line cannot be parsed.
+    """
+    m = re.search(r"Total bucket size:\s*([\d.]+)\s*([KMGTP]?B?)\b", text, re.IGNORECASE)
+    if m is None:
+        return None
+    num = float(m.group(1))
+    unit = (m.group(2) or "B").upper()
+    factors = {
+        "B": 1,
+        "KB": 1024,
+        "MB": 1024 ** 2,
+        "GB": 1024 ** 3,
+        "TB": 1024 ** 4,
+        "PB": 1024 ** 5,
+    }
+    return int(num * factors.get(unit, 1))
+
+
 def bucket_size_cli(bucket):
     """Get exact bucket size in bytes via `hcloud OBS ls obs://<bucket>/ -du -bf=raw`."""
     out = _run_cli(["hcloud", "OBS", "ls", "obs://%s" % bucket, "-du", "-bf=raw"])
-    m = re.search(r"Total bucket size:\s*(\d+)B", out)
-    if m is None:
+    size = _parse_cli_size(out)
+    if size is None:
         raise RuntimeError("Could not parse 'Total bucket size' from hcloud output for %s" % bucket)
-    return int(m.group(1))
+    return size
 
 
 def total_size_cli(buckets):

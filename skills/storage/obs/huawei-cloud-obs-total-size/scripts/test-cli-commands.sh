@@ -13,9 +13,10 @@ skip=0
 SCRIPT="$SKILL_PATH/scripts/query_obs_total_size.py"
 
 run_test() {
-    local id="$1" name="$2" cmd="$3"
+    local id="$1" name="$2"
+    shift 2
     echo -n "  [$id] $name ... "
-    if output=$(bash -c "$cmd" 2>&1); then
+    if output=$("$@" 2>&1); then
         echo "PASS"
         pass=$((pass + 1))
     else
@@ -35,10 +36,10 @@ if ! command -v python3 &>/dev/null; then
     exit 0
 fi
 
-run_test "TC-01" "Help output" "python3 $SCRIPT --help"
-run_test "TC-02" "Single bucket size (CLI auto)" "python3 $SCRIPT --bucket $BUCKET"
-run_test "TC-03" "Single bucket size (SDK)" "python3 $SCRIPT --bucket $BUCKET --executor sdk"
-run_test "TC-04" "All buckets total (SDK)" "python3 $SCRIPT --all --executor sdk"
+run_test "TC-01" "Help output" python3 "$SCRIPT" --help
+run_test "TC-02" "Single bucket size (CLI auto)" python3 "$SCRIPT" --bucket "$BUCKET"
+run_test "TC-03" "Single bucket size (SDK)" python3 "$SCRIPT" --bucket "$BUCKET" --executor sdk
+run_test "TC-04" "All buckets total (SDK)" python3 "$SCRIPT" --all --executor sdk
 
 echo
 echo "=== Results: $pass passed, $fail failed, $skip skipped ==="
