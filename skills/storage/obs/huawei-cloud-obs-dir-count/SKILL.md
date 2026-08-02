@@ -49,6 +49,11 @@ Agent → hcloud CLI (KooCLI OBS / obsutil, primary) → Huawei Cloud OBS API
 - Capacity/storage planning: estimate directory-level layout before migration
 - Compliance auditing: detect unexpected directories
 
+> **能力边界（Capability Boundary）：**
+> 本 Skill **仅统计目录（文件夹 / common prefixes）数量**，**不统计文件或对象（objects/files）数量**。
+> 若用户询问"桶里有多少个文件/对象"、总存储量或对象总大小，请明确告知本 Skill 不提供该能力，
+> 并引导使用其他 OBS 技能或华为云控制台 OBS 监控页。
+
 ## Prerequisites
 
 1. **hcloud CLI** (KooCLI) installed and authenticated — See `references/cli-installation-guide.md`
@@ -80,6 +85,8 @@ Agent → hcloud CLI (KooCLI OBS / obsutil, primary) → Huawei Cloud OBS API
 2. **Verify prerequisites** — `hcloud version`, `hcloud OBS ls -s -limit=1` to confirm obsutil credentials
 3. **Run the count** — use the script `scripts/count_obs_directories.py` (primary) with the appropriate flags
 4. **Return the count** — the script prints a single integer; relay that integer to the user
+5. **Handle errors** — if the script fails (e.g. bucket not found, invalid AK/SK, missing credentials), the script
+   prints a clear Chinese error hint on stderr with configuration guidance; relay that hint to the user
 
 ## Core Commands
 

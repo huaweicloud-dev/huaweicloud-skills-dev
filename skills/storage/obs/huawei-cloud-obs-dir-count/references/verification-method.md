@@ -59,8 +59,27 @@ The script requires a real OBS bucket name via the `TEST_OBS_BUCKET` environment
 
 6. **Empty bucket** — a bucket with no objects returns `0`.
 
+7. **Nonexistent bucket** — the script exits non-zero and prints a clear Chinese hint on stderr
+   (`错误：指定的 OBS 桶不存在，或当前 AK/SK 无权访问该桶（NoSuchBucket）`):
+
+   ```bash
+   python3 scripts/count_obs_directories.py --bucket <nonexistent_bucket>
+   ```
+
+   Expected: exit code 1, stderr contains the Chinese NoSuchBucket hint, stdout stays empty.
+
+8. **Missing credentials** — run without AK/SK env vars:
+
+   ```bash
+   env -u HUAWEI_ACCESS_KEY -u HUAWEI_SECRET_KEY \
+     python3 scripts/count_obs_directories.py --bucket <bucket_name> --executor sdk
+   ```
+
+   Expected: exit code 1, stderr contains the Chinese credential hint with configuration guidance.
+
 ## Pass Criteria
 
 - The CLI and SDK paths return the same immediate directory count for the same bucket
 - The output is a single integer with no surrounding text
 - No create/update/delete operation is ever performed
+- Error paths (nonexistent bucket, invalid/missing credentials) exit non-zero with a clear Chinese hint on stderr
