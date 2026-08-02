@@ -26,6 +26,78 @@ import subprocess
 import sys
 
 
+CONFIG_GUIDANCE = (
+    "请先在您的终端完成以下配置后重试：\n"
+    "  1) 安装 KooCLI(hcloud) 并配置 obsutil 凭证：\n"
+    "     hcloud obs config -i=<YourAK> -k=<YourSK> -e=obs.<Region>.myhuaweicloud.com\n"
+    "     示例(cn-north-4)：hcloud obs config -i=<YourAK> -k=<YourSK> -e=obs.cn-north-4.myhuaweicloud.com\n"
+    "  2) 或在环境变量中设置 AK/SK：HUAWEI_ACCESS_KEY / HUAWEI_SECRET_KEY\n"
+    "     （或 HUAWEICLOUD_SDK_AK / HUAWEICLOUD_SDK_SK）\n"
+    "  AK/SK 可在华为云控制台『我的凭证』页面获取。请勿在对话中粘贴 AK/SK。"
+)
+
+
+def _translate_cli_error(raw):
+    """Map common obsutil CLI error patterns to clear Chinese hints."""
+    lower = (raw or "").lower()
+    if "nosuchbucket" in lower or "bucket does not exist" in lower:
+        return (
+            "错误：指定的 OBS 桶不存在，或当前 AK/SK 无权访问该桶（NoSuchBucket）。\n"
+            "请检查桶名是否正确，以及 IAM 权限是否包含 obs:bucket:ListBucket / obs:object:List。"
+        )
+    if "invalidaccesskeyid" in lower:
+        return (
+            "错误：AK/SK 无效或已过期（InvalidAccessKeyId）。\n"
+            "请检查 obsutil 配置中的 AK/SK 是否正确：hcloud obs config -i=<YourAK> -k=<YourSK> -e=obs.<Region>.myhuaweicloud.com"
+        )
+    if "signaturedoesnotmatch" in lower or "signature" in lower:
+        return "错误：请求签名校验失败，请核对 AK/SK 与端点配置是否正确。"
+    if "accessdenied" in lower or "forbidden" in lower or "403" in lower:
+        return (
+            "错误：访问被拒绝（AccessDenied）。当前 AK/SK 无权限读取该桶，\n"
+            "请检查 IAM 策略是否包含 obs:bucket:ListBucket / obs:object:List。"
+        )
+    if "please set ak, sk and endpoint" in lower or "configure the ak, sk and endpoint" in lower or "configuration file" in lower:
+        return "错误：未检测到 obsutil 凭证配置。\n" + CONFIG_GUIDANCE
+    if "command not found" in lower or "not found: hcloud" in lower or "hcloud: command not found" in lower:
+        return (
+            "错误：未找到 hcloud (KooCLI) 命令。\n"
+            "请先安装 KooCLI，安装说明见 SKILL.md 的 references/cli-installation-guide.md。"
+        )
+    return None
+
+
+def _translate_sdk_error(exc):
+    """Map common huaweicloudsdkobs exceptions to clear Chinese hints."""
+    msg = str(exc)
+    lower = msg.lower()
+    try:
+        code = getattr(exc, "error_code", None) or ""
+        lower = (msg + " " + str(code)).lower()
+    except Exception:
+        pass
+    if "nosuchbucket" in lower or "bucket does not exist" in lower:
+        return (
+            "错误：指定的 OBS 桶不存在，或当前 AK/SK 无权访问该桶（NoSuchBucket）。\n"
+            "请检查桶名是否正确，以及 IAM 权限是否包含 obs:bucket:ListBucket / obs:object:List。"
+        )
+    if "invalidaccesskeyid" in lower:
+        return (
+            "错误：AK/SK 无效或已过期（InvalidAccessKeyId）。\n"
+            "请检查环境变量中的 AK/SK 是否正确（HUAWEI_ACCESS_KEY / HUAWEI_SECRET_KEY）。"
+        )
+    if "signaturedoesnotmatch" in lower:
+        return "错误：请求签名校验失败，请核对 AK/SK 与区域(region)参数是否正确。"
+    if "accessdenied" in lower or "forbidden" in lower or "403" in lower:
+        return (
+            "错误：访问被拒绝（AccessDenied）。当前 AK/SK 无权限读取该桶，\n"
+            "请检查 IAM 策略是否包含 obs:bucket:ListBucket / obs:object:List。"
+        )
+    if "connection" in lower or "timed out" in lower or "timeout" in lower:
+        return "错误：网络连接失败或超时，请检查网络与区域(region)参数。"
+    return None
+
+
 def _get_ak_sk():
     """Resolve AK/SK from common Huawei Cloud environment variables."""
     ak = (
@@ -51,8 +123,8 @@ def _build_sdk_client(region):
     ak, sk = _get_ak_sk()
     if not ak or not sk:
         raise RuntimeError(
-            "AK/SK not found. Set HUAWEI_ACCESS_KEY / HUAWEI_SECRET_KEY "
-            "(or HUAWEICLOUD_SDK_AK / HUAWEICLOUD_SDK_SK) in the environment."
+            "错误：未找到 AK/SK 凭证（HUAWEI_ACCESS_KEY / HUAWEI_SECRET_KEY，"
+            "或 HUAWEICLOUD_SDK_AK / HUAWEICLOUD_SDK_SK）。\n" + CONFIG_GUIDANCE
         )
     credentials = ObsCredentials(ak, sk)
     return ObsClient.new_builder().with_credentials(credentials).with_region(ObsRegion.value_of(region)).build()
@@ -69,14 +141,24 @@ def count_cli_immediate(bucket, prefix):
     if prefix:
         url += "/" + prefix.strip("/")
     url += "/"
-    proc = subprocess.run(
-        ["hcloud", "OBS", "ls", url, "-d"],
-        capture_output=True,
-        text=True,
-        timeout=60,
-    )
+    try:
+        proc = subprocess.run(
+            ["hcloud", "OBS", "ls", url, "-d"],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+    except FileNotFoundError:
+        raise RuntimeError(
+            "错误：未找到 hcloud (KooCLI) 命令。请先安装 KooCLI（见 "
+            "references/cli-installation-guide.md），或使用 --executor sdk 走 SDK 路径。"
+        )
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("错误：执行 hcloud OBS ls 超时，请检查网络后重试。")
     if proc.returncode != 0:
-        raise RuntimeError((proc.stderr or proc.stdout or "").strip())
+        raw = (proc.stderr or proc.stdout or "").strip()
+        hint = _translate_cli_error(raw)
+        raise RuntimeError(hint if hint else raw)
     n = _parse_folder_number(proc.stdout)
     if n is None:
         raise RuntimeError("Could not parse 'Folder number' from hcloud output")
@@ -151,6 +233,30 @@ def count_sdk_recursive(client, bucket, prefix):
     return len(dirs)
 
 
+def _check_prerequisites(executor, recursive):
+    """Best-effort startup validation so the user gets actionable hints before
+    a raw English failure. Never touches stdout."""
+    if executor == "sdk":
+        return  # _build_sdk_client raises a clear Chinese hint when AK/SK is missing
+    # cli / auto: only warn about a missing hcloud binary; obsutil credential
+    # problems surface through _translate_cli_error at runtime.
+    have_hcloud = False
+    try:
+        proc = subprocess.run(
+            ["bash", "-lc", "command -v hcloud"], capture_output=True, text=True, timeout=10
+        )
+        have_hcloud = proc.returncode == 0
+    except Exception:
+        have_hcloud = False
+    if not have_hcloud:
+        print(
+            "提示：未检测到 hcloud (KooCLI)。若需 CLI 方式执行，请先安装；"
+            "也可用 --executor sdk 走 SDK 路径。\n"
+            "安装说明见 references/cli-installation-guide.md。",
+            file=sys.stderr,
+        )
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Count directories in a Huawei Cloud OBS bucket. Prints ONLY the count."
@@ -167,35 +273,52 @@ def main():
 
     recursive = args.recursive
 
-    # --- Auto: prefer CLI for immediate counts, SDK for recursive ---
-    if args.executor == "auto":
-        if recursive:
-            client = _build_sdk_client(args.region)
-            print(count_sdk_recursive(client, args.bucket, args.prefix))
-            return
-        try:
+    try:
+        # --- Auto: prefer CLI for immediate counts, SDK for recursive ---
+        if args.executor == "auto":
+            if recursive:
+                _check_prerequisites("sdk", recursive)
+                client = _build_sdk_client(args.region)
+                print(count_sdk_recursive(client, args.bucket, args.prefix))
+                return
+            _check_prerequisites("auto", recursive)
+            try:
+                print(count_cli_immediate(args.bucket, args.prefix))
+                return
+            except Exception as exc:
+                try:
+                    client = _build_sdk_client(args.region)
+                    print(count_sdk_immediate(client, args.bucket, args.prefix))
+                    return
+                except Exception as sdk_exc:
+                    raise sdk_exc from exc
+
+        # --- Explicit executor ---
+        if args.executor == "cli":
+            if recursive:
+                # CLI has no recursive flag; fall back to the SDK for recursive counting.
+                _check_prerequisites("sdk", recursive)
+                client = _build_sdk_client(args.region)
+                print(count_sdk_recursive(client, args.bucket, args.prefix))
+                return
+            _check_prerequisites("cli", recursive)
             print(count_cli_immediate(args.bucket, args.prefix))
             return
-        except Exception:
-            client = _build_sdk_client(args.region)
-            print(count_sdk_immediate(client, args.bucket, args.prefix))
-            return
 
-    # --- Explicit executor ---
-    if args.executor == "cli":
+        _check_prerequisites("sdk", recursive)
+        client = _build_sdk_client(args.region)
         if recursive:
-            # CLI has no recursive flag; fall back to the SDK for recursive counting.
-            client = _build_sdk_client(args.region)
             print(count_sdk_recursive(client, args.bucket, args.prefix))
-            return
-        print(count_cli_immediate(args.bucket, args.prefix))
-        return
+        else:
+            print(count_sdk_immediate(client, args.bucket, args.prefix))
 
-    client = _build_sdk_client(args.region)
-    if recursive:
-        print(count_sdk_recursive(client, args.bucket, args.prefix))
-    else:
-        print(count_sdk_immediate(client, args.bucket, args.prefix))
+    except Exception as exc:
+        hint = _translate_sdk_error(exc)
+        if hint:
+            print(hint, file=sys.stderr)
+        else:
+            print(str(exc), file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
