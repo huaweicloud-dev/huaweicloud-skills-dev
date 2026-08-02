@@ -58,6 +58,11 @@ Agent → hcloud CLI (KooCLI OBS / obsutil, primary) → Huawei Cloud OBS API
 5. **IAM permissions** — `obs:bucket:ListBucket`, `obs:object:List`, `obs:bucket:ListAllMyBuckets`
    — See `references/iam-policies.md`
 
+> **跨区域桶（Multi-region）**：`--all` 会从 `hcloud OBS ls` 的输出解析每个桶所属区域，并按桶所属区域
+> 动态绑定 endpoint（CLI 用 `-e=obs.<region>.myhuaweicloud.com`，SDK 用桶的 location 构造客户端），
+> 因此账号下存在多区域桶时仍可正确汇总。单个桶查询失败（桶不存在 / 无权限）会跳过并给出告警，
+> 不会中断整次求和。
+
 > **OBS credentials are separate.** Before running, check whether obsutil credentials are configured:
 >
 > ```bash
@@ -93,7 +98,10 @@ python3 scripts/query_obs_total_size.py --bucket <bucket_name>
 
 ### Total Size Across All Buckets
 
-Returns the combined total size of all buckets under the account, in bytes:
+Returns the combined total size of all buckets under the account, in bytes.
+Buckets in regions other than the configured endpoint are queried with their
+own regional endpoint automatically; a single inaccessible bucket is skipped
+with a warning instead of aborting the whole sum:
 
 ```bash
 python3 scripts/query_obs_total_size.py --all

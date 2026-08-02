@@ -9,6 +9,12 @@ Primary executor : KooCLI obsutil-backed `hcloud OBS ls obs://<bucket>/ -du -bf=
 Fallback executor: huaweicloudsdkobs Python SDK
                    (lists buckets, lists objects per bucket and sums their sizes).
 
+Multi-region handling: when summing across all buckets, each bucket is queried
+with its own regional endpoint (`-e=obs.<region>.myhuaweicloud.com` for CLI, a
+client bound to the bucket's location for the SDK). A single bucket that cannot
+be queried (NoSuchBucket / NoSuchKey / permission denied) is skipped with a
+warning instead of aborting the whole summation.
+
 Usage:
   python3 query_obs_total_size.py [--bucket <name>] [--all]
       [--unit bytes|kb|mb|gb] [--human] [--region <region>] [--executor auto|cli|sdk]
@@ -24,6 +30,13 @@ import argparse
 import os
 import re
 import subprocess
+import sys
+
+_REGION_RE = re.compile(r"([a-z]{2}-[a-z0-9]+-\d)")
+_CRED_ENV_HINTS = (
+    "HUAWEI_ACCESS_KEY / HUAWEI_SECRET_KEY "
+    "(or HUAWEICLOUD_SDK_AK / HUAWEICLOUD_SDK_SK)"
+)
 
 
 def _resolve_credentials():
@@ -51,8 +64,8 @@ def _build_sdk_client(region):
     a_key, s_key = _resolve_credentials()
     if not a_key or not s_key:
         raise RuntimeError(
-            "AK/SK not found. Set HUAWEI_ACCESS_KEY / HUAWEI_SECRET_KEY "
-            "(or HUAWEICLOUD_SDK_AK / HUAWEICLOUD_SDK_SK) in the environment."
+            "未检测到 AK/SK 环境变量。请设置 %s 后重试。\n"
+            "提示：AK/SK 可在华为云控制台「我的凭证」页面获取。" % _CRED_ENV_HINTS
         )
     credentials = ObsCredentials(a_key, s_key)
     return ObsClient.new_builder().with_credentials(credentials).with_region(ObsRegion.value_of(region)).build()
@@ -66,9 +79,42 @@ def _run_cli(cmd):
 
 
 def list_buckets_cli():
-    """List all bucket names via `hcloud OBS ls`."""
+    """List (name, region) pairs via `hcloud OBS ls`.
+
+    Handles obsutil's wrapped-line output where a long bucket name spills onto
+    the next line together with the creation date and region.
+    """
     out = _run_cli(["hcloud", "OBS", "ls"])
-    return re.findall(r"obs://([^\s/]+)", out)
+    buckets = []
+    current = None
+    pending = False
+    for line in out.splitlines():
+        line = line.rstrip()
+        m = re.match(r"obs://([^\s/]+)", line)
+        if m:
+            if current:
+                buckets.append(current)
+            current = {"name": m.group(1), "region": "", "pending": False}
+            rest = line[m.end():]
+            dm = re.search(r"\d{4}-\d{2}-\d{2}T[\d:]+Z", rest)
+            if dm:
+                rm = _REGION_RE.search(rest[dm.end():])
+                if rm:
+                    current["region"] = rm.group(1)
+                else:
+                    current["pending"] = True
+            else:
+                current["pending"] = True
+        elif current and current.get("pending") and line.strip():
+            dm = re.search(r"\d{4}-\d{2}-\d{2}T[\d:]+Z", line)
+            if dm:
+                rm = _REGION_RE.search(line[dm.end():])
+                if rm:
+                    current["region"] = rm.group(1)
+            current["pending"] = False
+    if current:
+        buckets.append(current)
+    return [(b["name"], b["region"]) for b in buckets]
 
 
 def _parse_cli_size(text):
@@ -94,17 +140,56 @@ def _parse_cli_size(text):
     return int(num * factors.get(unit, 1))
 
 
-def bucket_size_cli(bucket):
-    """Get exact bucket size in bytes via `hcloud OBS ls obs://<bucket>/ -du -bf=raw`."""
-    out = _run_cli(["hcloud", "OBS", "ls", "obs://%s" % bucket, "-du", "-bf=raw"])
+def _friendly_error(bucket, raw):
+    """Map common obsutil error patterns to a friendly Chinese message."""
+    if "NoSuchBucket" in raw or "NoSuchKey" in raw or "404" in raw or "does not exist" in raw:
+        return "查询桶 %s 失败：该桶不存在（NoSuchBucket），请检查桶名称是否正确。" % bucket
+    if "AccessDenied" in raw or "403" in raw or "Forbidden" in raw:
+        return "查询桶 %s 失败：当前凭证无权限访问该桶（AccessDenied）。" % bucket
+    if "InvalidAccessKeyId" in raw or "Please set ak" in raw:
+        return "查询桶 %s 失败：obsutil 凭证未配置或无效，请先执行 hcloud obs config 配置 AK/SK/endpoint。" % bucket
+    return "查询桶 %s 失败：%s" % (bucket, raw[:300])
+
+
+def bucket_size_cli(bucket, region=""):
+    """Get exact bucket size in bytes via `hcloud OBS ls obs://<bucket>/ -du -bf=raw`.
+
+    When a region is known, binds the bucket's regional endpoint with `-e=...`
+    so cross-region buckets can be measured from any default endpoint.
+    """
+    cmd = ["hcloud", "OBS", "ls", "obs://%s" % bucket, "-du", "-bf=raw"]
+    if region:
+        cmd.append("-e=obs.%s.myhuaweicloud.com" % region)
+    try:
+        out = _run_cli(cmd)
+    except RuntimeError as exc:
+        raise RuntimeError(_friendly_error(bucket, str(exc)))
     size = _parse_cli_size(out)
     if size is None:
-        raise RuntimeError("Could not parse 'Total bucket size' from hcloud output for %s" % bucket)
+        raise RuntimeError("查询桶 %s 失败：无法解析 obsutil 输出中的总大小。" % bucket)
     return size
 
 
 def total_size_cli(buckets):
-    return sum(bucket_size_cli(b) for b in buckets)
+    """Sum bucket sizes via CLI. Per-bucket failures are skipped with a warning
+    (stderr) so a single inaccessible bucket never aborts the whole sum. When
+    only one bucket was requested, its error propagates directly."""
+    total = 0
+    failed = 0
+    errors = []
+    for name, region in buckets:
+        try:
+            total += bucket_size_cli(name, region)
+        except Exception as exc:
+            failed += 1
+            errors.append(str(exc))
+            if len(buckets) > 1:
+                print("警告：%s" % exc, file=sys.stderr)
+    if failed == len(buckets) and total == 0:
+        if len(buckets) == 1:
+            raise RuntimeError(errors[0] if errors else "查询桶失败")
+        raise RuntimeError("所有桶均查询失败，无法汇总总大小。请检查凭证配置与桶权限。")
+    return total
 
 
 def list_buckets_sdk(client):
@@ -134,8 +219,10 @@ def bucket_size_sdk(client, bucket):
 
 def total_size_sdk(client, buckets, default_region):
     """Sum sizes of buckets via the SDK. Buckets may live in different regions;
-    a client bound to the bucket's own location is used when known."""
+    a client bound to the bucket's own location is used when known. Per-bucket
+    failures are skipped with a warning."""
     total = 0
+    failed = 0
     for entry in buckets:
         if isinstance(entry, tuple):
             name, loc = entry
@@ -147,9 +234,12 @@ def total_size_sdk(client, buckets, default_region):
             region = default_region
         try:
             c = _build_sdk_client(region)
-        except Exception:
-            c = client
-        total += bucket_size_sdk(c, name)
+            total += bucket_size_sdk(c, name)
+        except Exception as exc:
+            failed += 1
+            print("警告：查询桶 %s 失败：%s" % (name, exc), file=sys.stderr)
+    if failed and failed == len(buckets) and total == 0:
+        raise RuntimeError("所有桶均查询失败，无法汇总总大小。请检查凭证配置与桶权限。")
     return total
 
 
@@ -167,6 +257,7 @@ def format_size(value, unit, human):
     if unit in factors:
         return "%.2f" % (value / factors[unit])
     return str(int(value))
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -190,33 +281,38 @@ def main():
     )
     args = parser.parse_args()
 
-    buckets = [args.bucket] if args.bucket else None
-
-    if args.executor == "cli":
-        names = buckets if buckets else list_buckets_cli()
-        total = total_size_cli(names)
-    elif args.executor == "sdk":
-        client = _build_sdk_client(args.region)
-        all_buckets = list_buckets_sdk(client)
-        if buckets:
-            loc_map = {n: (n, loc) for n, loc in all_buckets}
-            names = [loc_map.get(b, (b, "")) for b in buckets]
-        else:
-            names = all_buckets
-        total = total_size_sdk(client, names, args.region)
-    else:  # auto
-        try:
-            names = buckets if buckets else list_buckets_cli()
+    buckets = None
+    try:
+        if args.executor == "cli":
+            names = [(args.bucket, "")] if args.bucket else list_buckets_cli()
             total = total_size_cli(names)
-        except Exception:
+        elif args.executor == "sdk":
             client = _build_sdk_client(args.region)
             all_buckets = list_buckets_sdk(client)
-            if buckets:
+            if args.bucket:
                 loc_map = {n: (n, loc) for n, loc in all_buckets}
-                names = [loc_map.get(b, (b, "")) for b in buckets]
+                names = [loc_map.get(args.bucket, (args.bucket, ""))]
             else:
                 names = all_buckets
             total = total_size_sdk(client, names, args.region)
+        else:  # auto
+            try:
+                names = [(args.bucket, "")] if args.bucket else list_buckets_cli()
+                total = total_size_cli(names)
+            except RuntimeError as cli_err:
+                # Single-bucket requests propagate the CLI's friendly error
+                # (no double traceback). For --all, fall back to the SDK only
+                # when the CLI path failed as a whole (e.g. obsutil not
+                # configured); per-bucket skips already emit warnings.
+                if args.bucket:
+                    raise cli_err
+                client = _build_sdk_client(args.region)
+                all_buckets = list_buckets_sdk(client)
+                names = all_buckets
+                total = total_size_sdk(client, names, args.region)
+    except RuntimeError as exc:
+        print("错误：%s" % exc, file=sys.stderr)
+        sys.exit(1)
 
     print(format_size(total, args.unit, args.human))
 
