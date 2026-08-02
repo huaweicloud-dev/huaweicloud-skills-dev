@@ -1,0 +1,34 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "ListPublicips filtered by ECS device_id",
+      "command": "hcloud EIP ListPublicips/v3 --cli-region=cn-north-4 --vnic.device_id.1=<ecs-id>",
+      "expected": "EIPs bound to the given ECS (public_ip_address, id, status)"
+    },
+    {
+      "id": "TC-02",
+      "name": "ListPublicips filtered by ECS device_id (JSON output)",
+      "command": "hcloud EIP ListPublicips/v3 --cli-region=cn-north-4 --vnic.device_id.1=<ecs-id> --cli-output=json",
+      "expected": "JSON array of EIPs bound to the ECS"
+    },
+    {
+      "id": "TC-03",
+      "name": "Resolve ECS name to ID",
+      "command": "hcloud ECS ListServersDetails --cli-region=cn-north-4 --name=<ecs-name> --cli-output=json",
+      "expected": "Servers list containing the ECS id"
+    },
+    {
+      "id": "TC-04",
+      "name": "Show ECS detail",
+      "command": "hcloud ECS ShowServer --cli-region=cn-north-4 --server_id=<ecs-id>",
+      "expected": "ECS detail including addresses (fixed + floating)"
+    },
+    {
+      "id": "TC-05",
+      "name": "Show EIP detail",
+      "command": "hcloud EIP ShowPublicip/v3 --cli-region=cn-north-4 --publicip_id=<eip-id>",
+      "expected": "EIP detail"
+    }
+  ]
+}
