@@ -1,0 +1,42 @@
+{
+  "region": "cn-north-4",
+  "cluster_id": "{cluster_id}",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List All CCE Clusters",
+      "command": "hcloud CCE ListClusters --cli-region=cn-north-4",
+      "expected": "HTTP 200 with cluster list (names, IDs, status)"
+    },
+    {
+      "id": "TC-02",
+      "name": "List CCE Clusters Filtered By Status",
+      "command": "hcloud CCE ListClusters --cli-region=cn-north-4 --status=Available",
+      "expected": "HTTP 200 with cluster list filtered by status"
+    },
+    {
+      "id": "TC-03",
+      "name": "List CCE Clusters With Detail",
+      "command": "hcloud CCE ListClusters --cli-region=cn-north-4 --detail=true",
+      "expected": "HTTP 200 with cluster list including node/addon detail"
+    },
+    {
+      "id": "TC-04",
+      "name": "Extract Cluster Names Only",
+      "command": "hcloud CCE ListClusters --cli-region=cn-north-4 | jq -r '.items[].metadata.name'",
+      "expected": "Cluster name per line"
+    },
+    {
+      "id": "TC-05",
+      "name": "Show Cluster Detail (requires cluster_id)",
+      "command": "hcloud CCE ShowCluster --cli-region=cn-north-4 --cluster_id={cluster_id}",
+      "expected": "HTTP 200 with cluster details"
+    },
+    {
+      "id": "TC-06",
+      "name": "List Nodes Of Cluster (requires cluster_id)",
+      "command": "hcloud CCE ListNodes --cli-region=cn-north-4 --cluster_id={cluster_id}",
+      "expected": "HTTP 200 with node list or empty list"
+    }
+  ]
+}
