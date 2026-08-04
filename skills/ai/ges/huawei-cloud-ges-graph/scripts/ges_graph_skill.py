@@ -12,7 +12,7 @@ import time
 import requests
 from typing import Dict, List, Optional, Any, Union
 
-# 项目根目录
+# 项目根目录-测试修改
 CURRENT_FILE = os.path.abspath(__file__)
 SKILL_DIR = os.path.dirname(os.path.dirname(CURRENT_FILE))  # skill根目录（SKILL.md所在目录）
 SCRIPTS_DIR = os.path.dirname(CURRENT_FILE)                  # scripts/
