@@ -1,0 +1,36 @@
+{
+  "region": "cn-north-4",
+  "namespace": "",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List All SWR Repositories",
+      "command": "hcloud SWR ListReposDetails --cli-region=cn-north-4 --limit=100",
+      "expected": "HTTP 200 with repository array (or empty array)"
+    },
+    {
+      "id": "TC-02",
+      "name": "List Repositories With Pagination",
+      "command": "hcloud SWR ListReposDetails --cli-region=cn-north-4 --limit=10 --offset=0",
+      "expected": "HTTP 200 honoring limit/offset"
+    },
+    {
+      "id": "TC-03",
+      "name": "List Repositories Sorted By Updated Time",
+      "command": "hcloud SWR ListReposDetails --cli-region=cn-north-4 --limit=100 --order_column=updated_time --order_type=desc",
+      "expected": "HTTP 200 sorted by updated_time descending"
+    },
+    {
+      "id": "TC-04",
+      "name": "List Repositories With JSON Output",
+      "command": "hcloud SWR ListReposDetails --cli-region=cn-north-4 --limit=100 --cli-output=json",
+      "expected": "HTTP 200 with JSON output"
+    },
+    {
+      "id": "TC-05",
+      "name": "List Repositories In Namespace",
+      "command": "hcloud SWR ListReposDetails --cli-region=cn-north-4 --namespace={namespace} --limit=100",
+      "expected": "HTTP 200 with repositories in the specified namespace"
+    }
+  ]
+}
