@@ -1,0 +1,99 @@
+========================================================================
+  Skill Gate Audit Report
+  Scan target: /tmp/multica-task-2848083811/workclone/skills/storage/gaussdb/huawei-cloud-gaussdb-count
+  Skills scanned: 1
+  Scan level: standard
+  Generated: 2026-08-05 01:51:23 UTC
+========================================================================
+
+── 1. Scanned Skills ──
+
+  ✔ huawei-cloud-gaussdb-count
+
+── 2. Issue Summary ──
+
+  WARNING   14  MP2 x8, PE2 x6 (skillspector)
+
+── 3. Issue Details ──
+
+  [WARNING]  — Privilege Escalation
+    references/cli-installation-guide.md L12  PE2
+    Snippet: sudo mv hcloud /usr/local/bin/
+    Sudo/Root Execution
+
+  [WARNING]  — Privilege Escalation
+    references/cli-installation-guide.md L18  PE2
+    Snippet: sudo mv hcloud /usr/local/bin/
+    Sudo/Root Execution
+
+  [WARNING]  — Memory Poisoning
+    references/security-audit-report.txt L1  MP2
+    Snippet: ========================================================================
+    Context Window Stuffing
+
+  [WARNING]  — Memory Poisoning
+    references/security-audit-report.txt L7  MP2
+    Snippet: ========================================================================
+    Context Window Stuffing
+
+  [WARNING]  — Privilege Escalation
+    references/security-audit-report.txt L21  PE2
+    Snippet: Snippet: sudo mv hcloud /usr/local/bin/
+    Sudo/Root Execution
+
+  [WARNING]  — Privilege Escalation
+    references/security-audit-report.txt L26  PE2
+    Snippet: Snippet: sudo mv hcloud /usr/local/bin/
+    Sudo/Root Execution
+
+  [WARNING]  — Memory Poisoning
+    references/security-audit-report.txt L31  MP2
+    Snippet: Snippet: =======================================================================
+    Context Window Stuffing
+
+  [WARNING]  — Memory Poisoning
+    references/security-audit-report.txt L36  MP2
+    Snippet: Snippet: =======================================================================
+    Context Window Stuffing
+
+  [WARNING]  — Privilege Escalation
+    references/security-audit-report.txt L41  PE2
+    Snippet: Snippet: Snippet: sudo mv hcloud /usr/local/bin/
+    Sudo/Root Execution
+
+  [WARNING]  — Privilege Escalation
+    references/security-audit-report.txt L46  PE2
+    Snippet: Snippet: Snippet: sudo mv hcloud /usr/local/bin/
+    Sudo/Root Execution
+
+  [WARNING]  — Memory Poisoning
+    references/security-audit-report.txt L51  MP2
+    Snippet: Snippet: =======================================================================
+    Context Window Stuffing
+
+  [WARNING]  — Memory Poisoning
+    references/security-audit-report.txt L56  MP2
+    Snippet: Snippet: =======================================================================
+    Context Window Stuffing
+
+  [WARNING]  — Memory Poisoning
+    references/security-audit-report.txt L67  MP2
+    Snippet: ========================================================================
+    Context Window Stuffing
+
+  [WARNING]  — Memory Poisoning
+    references/security-audit-report.txt L69  MP2
+    Snippet: ========================================================================
+    Context Window Stuffing
+
+── 4. Fix Strategies ──
+
+  [WARNING] Privilege Escalation
+    Strategy: Review the issue and apply best practices for this category
+
+  [WARNING] Memory Poisoning
+    Strategy: Review the issue and apply best practices for this category
+
+========================================================================
+  Gate Verdict: PASS  |  gitleaks OK  skillspector OK
+========================================================================
