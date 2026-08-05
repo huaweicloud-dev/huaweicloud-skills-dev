@@ -25,25 +25,16 @@ The validation checks, among others:
 
 ## Expected Output
 
-A successful query returns the GaussDB instance count and total storage size, e.g.:
+A successful query returns the GaussDB instance count, e.g.:
 
 ```text
 GaussDB for openGauss count: 2
-GaussDB for openGauss total size: 400.0 GB
 GaussDB (MySQL) count: 1
-GaussDB (MySQL) total size: 100.0 GB
 Total GaussDB instances: 3
-Total GaussDB storage size: 500.0 GB
 ```
 
 When using the count-only CLI lookup, a single number is returned:
 
 ```text
 2
-```
-
-When using the size lookup, the summed storage size in GB is returned:
-
-```text
-400
 ```

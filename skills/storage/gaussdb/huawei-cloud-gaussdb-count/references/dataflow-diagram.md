@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart TD
-    A[User/Agent] -->|"Count GaussDB instances and size"| B{hcloud CLI available?}
+    A[User/Agent] -->|"Count GaussDB instances"| B{hcloud CLI available?}
     B -->|Yes| C["hcloud GaussDBforopenGauss ListInstances --cli-region={region} --limit={limit}"]
     B -->|Yes| D["hcloud GaussDB ListGaussMySqlInstances --cli-region={region} --limit={limit}"]
     B -->|No| E["Python SDK: GaussDBforopenGaussClient.list_instances()"]
@@ -13,12 +13,9 @@ flowchart TD
     F --> H
     G --> I[Huawei Cloud GaussDB API]
     H --> I
-    I --> J["Response: instances[] + total_count + volume.size per instance"]
+    I --> J["Response: instances[] + total_count"]
     J --> K["Read total_count (authoritative total)"]
-    J --> M["Sum instances[].volume.size (GB)"]
-    K --> N["Output count"]
-    M --> N["Output total storage size"]
-    N --> O["Output GaussDB count + size to user"]
+    K --> L["Output GaussDB instance count to user"]
 ```
 
 ## API Endpoint

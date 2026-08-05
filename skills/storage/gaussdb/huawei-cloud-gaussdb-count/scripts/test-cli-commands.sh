@@ -94,17 +94,11 @@ if [ "$EXECUTOR" = "cli" ]; then
   run_test "TC-02" "Extract GaussDB for openGauss count only" \
     "hcloud GaussDBforopenGauss ListInstances --cli-region=$REGION --limit=100 | jq -r '.total_count'"
 
-  run_test "TC-03" "Sum GaussDB for openGauss storage size (GB)" \
-    "hcloud GaussDBforopenGauss ListInstances --cli-region=$REGION --limit=100 | jq '[.instances[].volume.size // 0 | tonumber] | add // 0'"
-
-  run_test "TC-04" "Count GaussDB (MySQL) instances" \
+  run_test "TC-03" "Count GaussDB (MySQL) instances" \
     "hcloud GaussDB ListGaussMySqlInstances --cli-region=$REGION --limit=100"
 
-  run_test "TC-05" "Extract GaussDB (MySQL) count only" \
+  run_test "TC-04" "Extract GaussDB (MySQL) count only" \
     "hcloud GaussDB ListGaussMySqlInstances --cli-region=$REGION --limit=100 | jq -r '.total_count'"
-
-  run_test "TC-06" "Sum GaussDB (MySQL) storage size (GB)" \
-    "hcloud GaussDB ListGaussMySqlInstances --cli-region=$REGION --limit=100 | jq '[.instances[].volume.size // 0 | tonumber] | add // 0'"
 fi
 
 if [ "$EXECUTOR" = "sdk" ]; then

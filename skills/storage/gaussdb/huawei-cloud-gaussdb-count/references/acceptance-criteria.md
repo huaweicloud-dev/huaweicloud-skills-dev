@@ -5,7 +5,6 @@
 - [x] **Count GaussDB for openGauss instances**: The skill returns the total number of GaussDB for openGauss instances in a region
 - [x] **Count GaussDB (MySQL) instances**: The skill returns the total number of GaussDB (MySQL-compatible) instances in a region
 - [x] **Total count**: The skill reports a combined total across both GaussDB families
-- [x] **Report GaussDB storage size**: The skill reports the total storage size (GB) summed from each instance's `volume.size`
 - [x] **CLI mode**: `hcloud GaussDBforopenGauss ListInstances` and `hcloud GaussDB ListGaussMySqlInstances` work when the CLI is installed
 - [x] **SDK fallback**: Python SDK `list_instances()` and `list_gauss_my_sql_instances()` work when the CLI is unavailable
 - [x] **Accurate count**: The count is read from the authoritative `total_count` field, never truncated to one page

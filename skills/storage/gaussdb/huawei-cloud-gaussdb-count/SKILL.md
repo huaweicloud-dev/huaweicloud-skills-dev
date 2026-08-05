@@ -1,17 +1,15 @@
 ---
 name: huawei-cloud-gaussdb-count
 description: >-
-  Count the number of Huawei Cloud GaussDB instances in a region and report
-  their total storage size (GB). Covers both GaussDB for openGauss and GaussDB
-  (MySQL-compatible) instances. Returns the authoritative total_count from the
-  list API and sums the per-instance volume size, so the reported number and
-  size are always correct. Read-only — never creates, modifies or deletes any
-  resource.
+  Count the number of Huawei Cloud GaussDB instances in a region and output the
+  count. Covers both GaussDB for openGauss and GaussDB (MySQL-compatible)
+  instances. Returns the authoritative total_count from the list API, so the
+  reported number is always correct. Read-only — never creates, modifies or
+  deletes any resource.
   Use for GaussDB database inventory, daily inspection, or cost review.
   Triggers include: count GaussDB, GaussDB count, GaussDB instance
   count, how many GaussDB instances, GaussDB数量, GaussDB实例数量,
-  查询GaussDB数量, GaussDB总数, 统计GaussDB实例数, GaussDB大小,
-  GaussDB存储大小, GaussDB storage size, GaussDB size.
+  查询GaussDB数量, GaussDB总数, 统计GaussDB实例数.
 tags:
   - huawei-cloud
   - gaussdb
@@ -25,8 +23,7 @@ tags:
 ## Overview
 
 This skill queries the total number of Huawei Cloud GaussDB instances in a
-region and reports their total storage size (GB). It supports both GaussDB
-product families:
+region and outputs the count. It supports both GaussDB product families:
 
 - **GaussDB for openGauss** — primary/standby (Ha) and distributed (Enterprise)
   instances, queried via the `GaussDBforopenGauss` service.
@@ -34,8 +31,7 @@ product families:
 
 The count is taken from the authoritative `total_count` field returned by the
 list API, so the result is exact regardless of page size — no pagination sum is
-needed for the count itself. The storage size is the sum of each instance's
-`volume.size` field (in GB) returned by the same list API.
+needed for the count itself.
 
 **Architecture:**
 
@@ -46,8 +42,8 @@ Agent → hcloud CLI (primary) → Huawei Cloud GaussDB API
 
 **Applicable Scenarios:**
 
-- Daily inspection: how many GaussDB instances exist in a region and their total size
-- Database inventory, storage planning and cost review
+- Daily inspection: how many GaussDB instances exist in a region
+- Database inventory and cost review
 - Capacity planning and pre-migration verification
 
 ## Prerequisites
@@ -62,8 +58,8 @@ Agent → hcloud CLI (primary) → Huawei Cloud GaussDB API
 
 1. **Identify query scope** — Decide which region to query
 2. **Select execution mode** — Use the hcloud CLI by default; fall back to the Python SDK if the CLI is unavailable
-3. **Execute the query** — Run the list commands and capture `total_count` plus each instance's `volume.size`
-4. **Present results** — Output the GaussDB instance count and total storage size to the user
+3. **Execute the query** — Run the count commands and capture `total_count` from each response
+4. **Present results** — Output the GaussDB instance count to the user
 
 ## Core Commands
 
@@ -91,22 +87,6 @@ hcloud GaussDBforopenGauss ListInstances --cli-region={region} --limit=100 | jq 
 hcloud GaussDB ListGaussMySqlInstances --cli-region={region} --limit=100 | jq -r '.total_count'
 ```
 
-### Size Lookup (jq)
-
-To sum the storage size (GB) of all returned instances (`volume.size` may be a
-number or a numeric string, so `tonumber` is applied for robustness):
-
-```bash
-hcloud GaussDBforopenGauss ListInstances --cli-region={region} --limit=100 | jq '[.instances[].volume.size // 0 | tonumber] | add // 0'
-```
-
-```bash
-hcloud GaussDB ListGaussMySqlInstances --cli-region={region} --limit=100 | jq '[.instances[].volume.size // 0 | tonumber] | add // 0'
-```
-
-> Note: `volume.size` is per instance in GB. When more than 100 instances exist,
-> paginate via `--offset` (in steps of 100) and sum across pages for the total size.
-
 ### SDK Fallback Examples
 
 When the CLI is unavailable, use the Python SDK:
@@ -126,8 +106,7 @@ client = GaussDBforopenGaussClient.new_builder() \
     .build()
 
 response = client.list_instances(ListInstancesRequest(limit=100))
-print("count:", response.total_count)
-print("total size (GB):", sum(i.volume.size for i in (response.instances or []) if i.volume))
+print(response.total_count)
 ```
 
 ```python
@@ -145,21 +124,19 @@ client = GaussDBClient.new_builder() \
     .build()
 
 response = client.list_gauss_my_sql_instances(ListGaussMySqlInstancesRequest(limit=100))
-print("count:", response.total_count)
-print("total size (GB):", sum(int(i.volume.size) for i in (response.instances or []) if i.volume))
+print(response.total_count)
 ```
 
-A ready-to-run helper script is provided in `scripts/count_gaussdb_instances.py` covering both product families
-(count + total storage size). The script catches `ClientRequestException`/`SdkException` and prints a concise,
-actionable error message (credential / region / IAM-permission hint) then exits non-zero — it never dumps a raw
-traceback.
+A ready-to-run helper script is provided in `scripts/count_gaussdb_instances.py` covering both product families. The script catches
+`ClientRequestException`/`SdkException` and prints a concise, actionable error message (credential / region / IAM-permission hint) then exits
+non-zero — it never dumps a raw traceback.
 
 ## Parameter Confirmation
 
 | Parameter | Required | Description | Example |
 |-----------|----------|-------------|---------|
 | `{region}` | Yes | Huawei Cloud region | `cn-north-4` |
-| `{limit}` | No | Max records per page (1-100, default 100); does not affect `total_count`. For total size with >100 instances, paginate via `--offset` and sum across pages | `100` |
+| `{limit}` | No | Max records per page (1-100, default 100); does not affect `total_count` | `100` |
 
 ## Reference Documents
 

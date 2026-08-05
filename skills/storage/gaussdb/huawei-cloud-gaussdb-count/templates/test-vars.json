@@ -15,33 +15,21 @@
     },
     {
       "id": "TC-03",
-      "name": "Sum GaussDB for openGauss storage size in GB (CLI)",
-      "command": "hcloud GaussDBforopenGauss ListInstances --cli-region=cn-north-4 --limit=100 | jq '[.instances[].volume.size // 0 | tonumber] | add // 0'",
-      "expected": "Numeric total size in GB"
-    },
-    {
-      "id": "TC-04",
       "name": "Count GaussDB (MySQL) instances (CLI)",
       "command": "hcloud GaussDB ListGaussMySqlInstances --cli-region=cn-north-4 --limit=100",
       "expected": "HTTP 200 with instances list and total_count"
     },
     {
-      "id": "TC-05",
+      "id": "TC-04",
       "name": "Extract GaussDB (MySQL) count only (CLI)",
       "command": "hcloud GaussDB ListGaussMySqlInstances --cli-region=cn-north-4 --limit=100 | jq -r '.total_count'",
       "expected": "Numeric count, no other fields"
     },
     {
-      "id": "TC-06",
-      "name": "Sum GaussDB (MySQL) storage size in GB (CLI)",
-      "command": "hcloud GaussDB ListGaussMySqlInstances --cli-region=cn-north-4 --limit=100 | jq '[.instances[].volume.size // 0 | tonumber] | add // 0'",
-      "expected": "Numeric total size in GB"
-    },
-    {
-      "id": "TC-07",
-      "name": "Count and size both GaussDB families (SDK)",
+      "id": "TC-05",
+      "name": "Count both GaussDB families (SDK)",
       "command": "python3 scripts/count_gaussdb_instances.py --region cn-north-4 --limit 100",
-      "expected": "opengauss/mysql count and total size printed"
+      "expected": "opengauss count, mysql count, and total printed"
     }
   ]
 }
