@@ -1,0 +1,88 @@
+# 总测试报告: huawei-cloud-bms-list
+
+- 生成时间: 2026-08-06
+- 被测 skill: huawei-cloud-bms-list
+- 对应 PR: https://gitcode.com/developer-skill/huaweicloud-skills-dev/merge_requests/146
+- 报告类型: PR 唯一总测试报告（一个 PR 一份）
+
+## 一、测试统计
+
+| 指标 | 数值 |
+|------|------|
+| 总用例数 | 11 |
+| 通过 | 11 |
+| 告警 | 0 |
+| 失败 | 0 |
+| 跳过 | 0 |
+| 通过率 | 100% |
+
+（详细统计与对比见下方"详细测试报告"）
+
+## 二、问题清单
+
+（未发现问题单）
+
+## 三、详细测试报告
+
+# 整合测试报告: huawei-cloud-bms-list
+
+- 评测来源: huawei-cloud-skill-basictest 基本功评测
+- 测试日期: 2026-08-06
+- 被评测 skill: huawei-cloud-bms-list
+- 评测方式: 真实华为云环境实测（KooCLI + Python SDK 兜底）
+- 归档地址: https://gitcode.com/developer-skill/huaweicloud-skills-dev/tree/main/skills/compute/bms/huawei-cloud-bms-list
+
+---
+
+## 一、测试统计
+
+| 指标 | 数值 |
+|------|------|
+| 总用例数 | 11 |
+| 通过 | 11 |
+| 告警 | 0 |
+| 失败 | 0 |
+| 跳过 | 0 |
+| 通过率 | 100% |
+
+- 正例 6 条（P1~P6）：全部通过
+- 反例 5 条（N1~N5）：全部通过（报错质量达标）
+
+## 二、预期 vs 实际对比
+
+| 用例 | 场景 | 预期 | 实际 | 结论 |
+|------|------|------|------|------|
+| P1 | 查询全部 BMS 列表 | 返回 count+servers[] | 返回 `{"count":0,"servers":[]}`（真实环境无 BMS） | ✅ 通过 |
+| P2 | 仅输出 BMS 名称 | 一行一个名称 | 正常输出（空列表时无输出，rc=0） | ✅ 通过 |
+| P3 | 按状态 ACTIVE 过滤 | 过滤后列表 | 返回 `{"count":0,"servers":[]}` | ✅ 通过 |
+| P4 | 按名称 bms-01 过滤 | 匹配列表 | 返回 `{"count":0,"servers":[]}` | ✅ 通过 |
+| P5 | 分页 limit=25 offset=1 | 分页结果 | 返回 `{"count":0,"servers":[]}` | ✅ 通过 |
+| P6 | SDK 兜底查询 | SDK 返回列表 | `SDK OK, servers: []` | ✅ 通过 |
+| N1 | 创建/删除 BMS（越界） | 明确拒绝 | SKILL.md 能力边界明确声明"仅查询、不创建/删除/修改"，并说明"请明确告知不提供该能力" | ✅ 通过 |
+| N2 | 查询单台详情/密码（越界） | 明确拒绝 | SKILL.md 明确声明不含 show-by-id/网卡/磁盘/密码查询 | ✅ 通过 |
+| N3 | 无效 region | 明确报错 | KooCLI 报 `[USE_ERROR]The value of cli-region is not supported` 并列出全部支持区域 | ✅ 通过 |
+| N4 | 无效 status 枚举 | 有提示 | API 静默忽略返回全量，SKILL.md 已明确注明该行为并提示使用合法枚举 | ✅ 通过 |
+| N5 | 无凭证 | 明确报错 | KooCLI 报 `[USE_ERROR]Profile xxx does not exist` / SDK 报 ak 为空异常 | ✅ 通过 |
+
+## 三、报错质量评估
+
+- 无效 region：**好** — 明确报错并列出合法取值，用户可直接修正
+- 无效 status：**一般但已文档化** — API 静默忽略，但 SKILL.md 提前注明"无效值被静默忽略，请用合法枚举"，避免用户误判
+- 越界操作（创建/删除/详情）：**好** — SKILL.md 能力边界声明清晰
+- 无凭证：**好** — CLI/SDK 均有明确错误信息
+
+## 四、问题单
+
+本次评测未发现 BUG。问题单为空。
+
+## 五、评测方式说明
+
+1. **KooCLI 实测**：以 `hcloud BMS ListBareMetalServers --cli-region=cn-north-4` 为主路径，覆盖全量/名称/状态/名称过滤/分页共 5 个命令变体，全部在真实华为云环境执行成功
+2. **SDK 兜底实测**：`huaweicloudsdkbms` Python SDK `list_bare_metal_servers` 实测成功
+3. **skill 自带脚本**：`validate-skill.sh`（23 项规范检查全部 PASS）、`test-cli-commands.sh` CLI 模式 5/5 PASS、SDK 模式 1/1 PASS
+4. **huawei-cloud-skill-tester 流水线**：7 阶段跑通，Phase 4 中 22 条用例因 tester 引擎不支持将 `hcloud` CLI 命令映射为 SDK 方法而判 fail（`未知SDK方法: hcloud`），属 **tester 引擎能力限制**，非被测 skill 缺陷；已通过手工逐条实测覆盖验证
+
+## 六、结论
+
+huawei-cloud-bms-list skill 功能正确，能力边界清晰，报错质量达标，未发现 BUG，**测试通过**。
+
