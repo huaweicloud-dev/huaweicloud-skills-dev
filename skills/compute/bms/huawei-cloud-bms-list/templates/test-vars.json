@@ -1,0 +1,41 @@
+{
+  "region": "cn-north-4",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List All BMS Instances",
+      "command": "hcloud BMS ListBareMetalServers --cli-region={region} --cli-output=json",
+      "expected": "HTTP 200 with server list (names, ids, status)"
+    },
+    {
+      "id": "TC-02",
+      "name": "Extract BMS Names Only",
+      "command": "hcloud BMS ListBareMetalServers --cli-region={region} --cli-output=json | jq -r '.servers[].name'",
+      "expected": "One server name per line"
+    },
+    {
+      "id": "TC-03",
+      "name": "List BMS Filtered By Status",
+      "command": "hcloud BMS ListBareMetalServers --cli-region={region} --status=ACTIVE --cli-output=json",
+      "expected": "HTTP 200 with server list filtered by status"
+    },
+    {
+      "id": "TC-04",
+      "name": "List BMS Filtered By Name",
+      "command": "hcloud BMS ListBareMetalServers --cli-region={region} --name=bms-01 --cli-output=json",
+      "expected": "HTTP 200 with servers matching the name filter"
+    },
+    {
+      "id": "TC-05",
+      "name": "List BMS With Pagination",
+      "command": "hcloud BMS ListBareMetalServers --cli-region={region} --limit=25 --offset=1 --cli-output=json",
+      "expected": "HTTP 200 with server list paginated"
+    },
+    {
+      "id": "TC-06",
+      "name": "SDK Fallback List BMS",
+      "command": "python3 -c \"import os; from huaweicloudsdkcore.auth.credentials import BasicCredentials; from huaweicloudsdkbms.v1.region.bms_region import BmsRegion; from huaweicloudsdkbms.v1 import BmsClient, ListBareMetalServersRequest; c=BmsClient.new_builder().with_credentials(BasicCredentials(os.getenv('HUAWEICLOUD_SDK_AK'),os.getenv('HUAWEICLOUD_SDK_SK'))).with_region(BmsRegion.value_of('cn-north-4')).build(); r=c.list_bare_metal_servers(ListBareMetalServersRequest(limit=25)); print('SDK OK, servers:', [s.name for s in (r.servers or [])])\"",
+      "expected": "SDK returns the same server list"
+    }
+  ]
+}
