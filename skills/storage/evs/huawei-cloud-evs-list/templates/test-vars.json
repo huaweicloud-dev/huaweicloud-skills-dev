@@ -1,0 +1,41 @@
+{
+  "region": "cn-north-4",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List All EVS Disks",
+      "command": "hcloud EVS ListVolumes --cli-region={region} --cli-output=json",
+      "expected": "HTTP 200 with disk list (names, ids, status, size)"
+    },
+    {
+      "id": "TC-02",
+      "name": "Extract EVS Disk Names Only",
+      "command": "hcloud EVS ListVolumes --cli-region={region} --cli-output=json | jq -r '.volumes[].name'",
+      "expected": "One disk name per line"
+    },
+    {
+      "id": "TC-03",
+      "name": "List EVS Disks Filtered By Status",
+      "command": "hcloud EVS ListVolumes --cli-region={region} --status=available --cli-output=json",
+      "expected": "HTTP 200 with disk list filtered by status"
+    },
+    {
+      "id": "TC-04",
+      "name": "List EVS Disks Filtered By Name",
+      "command": "hcloud EVS ListVolumes --cli-region={region} --name=data-disk-01 --cli-output=json",
+      "expected": "HTTP 200 with disks matching the name filter"
+    },
+    {
+      "id": "TC-05",
+      "name": "List EVS Disks With Pagination",
+      "command": "hcloud EVS ListVolumes --cli-region={region} --limit=25 --offset=0 --cli-output=json",
+      "expected": "HTTP 200 with disk list paginated"
+    },
+    {
+      "id": "TC-06",
+      "name": "SDK Fallback List EVS Disks",
+      "command": "python3 -c \"import os; from huaweicloudsdkcore.auth.credentials import BasicCredentials; from huaweicloudsdkevs.v2.region.evs_region import EvsRegion; from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest; c=EvsClient.new_builder().with_credentials(BasicCredentials(os.getenv('HUAWEICLOUD_SDK_AK'),os.getenv('HUAWEICLOUD_SDK_SK'))).with_region(EvsRegion.value_of('cn-north-4')).build(); r=c.list_volumes(ListVolumesRequest(limit=25)); print('SDK OK, disks:', [v.name for v in (r.volumes or [])])\"",
+      "expected": "SDK returns the same disk list"
+    }
+  ]
+}
