@@ -1,0 +1,13 @@
+=== skill-gate-report ===
+date: 2026-08-07T01:32:11Z
+
+skillcheck  : UNAVAILABLE (no PyPI distribution)
+markdownlint-cli2 : PASS (0 issues / 6 files)
+hwcloud-spec (validate-skill.sh) : PASS (24/24)
+gitleaks : PASS (no leaks)
+pip-audit : PASS (no known vulnerabilities)
+credential scan : PASS
+vulnerability pattern scan : PASS
+prompt-injection scan : PASS
+
+Verdict: PASS — skillcheck unavailable due to missing distribution

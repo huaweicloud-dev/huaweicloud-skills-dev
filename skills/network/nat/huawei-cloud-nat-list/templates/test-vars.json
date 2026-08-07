@@ -1,0 +1,53 @@
+{
+  "region": "cn-north-4",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List All Public NAT Gateways",
+      "command": "hcloud NAT ListNatGateways --cli-region={region} --cli-output=json",
+      "expected": "HTTP 200 with nat_gateways[] (names, ids, status, spec)"
+    },
+    {
+      "id": "TC-02",
+      "name": "Extract NAT Gateway Names Only",
+      "command": "hcloud NAT ListNatGateways --cli-region={region} --cli-query=\"nat_gateways[].name\"",
+      "expected": "One gateway name per array element"
+    },
+    {
+      "id": "TC-03",
+      "name": "List NAT Gateways Filtered By Status",
+      "command": "hcloud NAT ListNatGateways --cli-region={region} --status.1=ACTIVE --cli-output=json",
+      "expected": "HTTP 200 with only ACTIVE gateways"
+    },
+    {
+      "id": "TC-04",
+      "name": "List NAT Gateways Filtered By Spec",
+      "command": "hcloud NAT ListNatGateways --cli-region={region} --spec.1=1 --cli-output=json",
+      "expected": "HTTP 200 with only spec=1 gateways"
+    },
+    {
+      "id": "TC-05",
+      "name": "List NAT Gateways With Pagination",
+      "command": "hcloud NAT ListNatGateways --cli-region={region} --limit=10 --cli-output=json",
+      "expected": "HTTP 200 with at most 10 gateways"
+    },
+    {
+      "id": "TC-05b",
+      "name": "List NAT Gateways Sorted By created_at desc",
+      "command": "hcloud NAT ListNatGateways --cli-region={region} --sort_key=created_at --sort_dir=desc --cli-output=json",
+      "expected": "HTTP 200 with gateways sorted by created_at descending"
+    },
+    {
+      "id": "TC-06",
+      "name": "Quality-Reporting Wrapper (names only)",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/list_nat_gateways.py --region={region} --names-only",
+      "expected": "Same gateway names, one per line; quality report sent (or disabled cleanly)"
+    },
+    {
+      "id": "TC-07",
+      "name": "SDK Fallback List NAT Gateways",
+      "command": "python3 -c \"import os; from huaweicloudsdkcore.auth.credentials import BasicCredentials; from huaweicloudsdknat.v2.region.nat_region import NatRegion; from huaweicloudsdknat.v2 import NatClient, ListNatGatewaysRequest; c=NatClient.new_builder().with_credentials(BasicCredentials(os.getenv('HUAWEICLOUD_SDK_AK'),os.getenv('HUAWEICLOUD_SDK_SK'))).with_region(NatRegion.value_of('cn-north-4')).build(); r=c.list_nat_gateways(ListNatGatewaysRequest(limit=25)); print('SDK OK, gateways:', [g.name for g in (r.nat_gateways or [])])\"",
+      "expected": "SDK returns the NAT gateway list"
+    }
+  ]
+}
