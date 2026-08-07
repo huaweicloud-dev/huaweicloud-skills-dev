@@ -1,0 +1,54 @@
+{
+  "P1": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action balance",
+    "expect": "rc0"
+  },
+  "P2": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action balance --format json",
+    "expect": "contains:\"action\": \"balance\""
+  },
+  "P3": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action changes --begin 2026-07-01 --end 2026-07-31 --limit 20",
+    "expect": "contains:Balance Change Records"
+  },
+  "P4": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action changes --balance-type CREDIT --begin 2026-07-01 --end 2026-07-31",
+    "expect": "rc0"
+  },
+  "P5": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action changes --begin 2026-07-01 --end 2026-07-31 --revenue-expense-type EXPENSE",
+    "expect": "rc0"
+  },
+  "P6": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action monthly-sum --bill-cycle 2026-07 --limit 20",
+    "expect": "contains:Monthly Bill Summary"
+  },
+  "P7": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action monthly-sum --bill-cycle 2026-07 --format json",
+    "expect": "contains:\"action\": \"monthly-sum\""
+  },
+  "N1": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action recharge",
+    "expect": "error"
+  },
+  "N2": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action monthly-sum --bill-cycle 2026/07",
+    "expect": "error"
+  },
+  "N3": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action changes --begin 2026-08-01 --end 2026-07-01",
+    "expect": "error"
+  },
+  "N4": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --no-credentials --action balance",
+    "expect": "error"
+  },
+  "N5": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action changes --limit 500",
+    "expect": "error"
+  },
+  "N6": {
+    "cmd": "bash /tmp/multica-task-3682775181/opencode/run_balance_query.sh --action changes --begin 2026-7-1 --end 2026-07-31",
+    "expect": "error"
+  }
+}
