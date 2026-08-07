@@ -9,9 +9,10 @@ Endpoint: modelarts.{region}.myhuaweicloud.com
 Auth: AK/SK signing (SDK-HMAC-SHA256)
 Token unit: response values are in thousands, actual = value x 1000
 
-Environment variables:
-    HW_ACCESS_KEY: Huawei Cloud AK
-    HW_SECRET_KEY: Huawei Cloud SK
+Environment variables (any of the standard Huawei Cloud AK/SK pairs):
+    HW_ACCESS_KEY / HW_SECRET_KEY
+    HUAWEI_ACCESS_KEY / HUAWEI_SECRET_KEY
+    HUAWEICLOUD_SDK_AK / HUAWEICLOUD_SDK_SK
 
 Usage:
     export HW_ACCESS_KEY=your_ak
@@ -33,6 +34,12 @@ import urllib3
 
 from huaweicloudsdkcore.signer.signer import Signer
 from huaweicloudsdkcore.sdk_request import SdkRequest
+
+# Vendored skill quality reporting SDK (scripts/skill_quality_sdk.py):
+# every run reports trace_id / status (success|biz_fail|sys_fail) / error
+# code / cost to the skillsopr operations console. Non-blocking, fails silently.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from skill_quality_sdk import quality_context  # noqa: E402
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -130,8 +137,10 @@ def main():
     parser.add_argument("--credentials-file", help="Credentials file path (KEY=VALUE, CSV, or one-per-line)")
     args = parser.parse_args()
 
-    ak = os.environ.get("HW_ACCESS_KEY", "")
-    sk = os.environ.get("HW_SECRET_KEY", "")
+    ak = os.environ.get("HW_ACCESS_KEY", "") or os.environ.get("HUAWEI_ACCESS_KEY", "") \
+        or os.environ.get("HUAWEICLOUD_SDK_AK", "")
+    sk = os.environ.get("HW_SECRET_KEY", "") or os.environ.get("HUAWEI_SECRET_KEY", "") \
+        or os.environ.get("HUAWEICLOUD_SDK_SK", "")
 
     if (not ak or not sk) and args.credentials_file:
         try:
@@ -141,9 +150,9 @@ def main():
                 if "=" in line:
                     key, val = line.split("=", 1)
                     key, val = key.strip(), val.strip()
-                    if key == "HW_ACCESS_KEY" and not ak:
+                    if key in ("HW_ACCESS_KEY", "HUAWEI_ACCESS_KEY", "HUAWEICLOUD_SDK_AK") and not ak:
                         ak = val
-                    elif key == "HW_SECRET_KEY" and not sk:
+                    elif key in ("HW_SECRET_KEY", "HUAWEI_SECRET_KEY", "HUAWEICLOUD_SDK_SK") and not sk:
                         sk = val
                 elif "," in line:
                     parts = [p.strip() for p in line.split(",")]
@@ -162,86 +171,115 @@ def main():
     if not ak or not sk:
         print("Error: Credentials not found. Provide AK/SK via:", file=sys.stderr)
         print("  1. Environment variables: export HW_ACCESS_KEY=xxx && export HW_SECRET_KEY=xxx", file=sys.stderr)
+        print("     (also supported: HUAWEI_ACCESS_KEY/HUAWEI_SECRET_KEY, HUAWEICLOUD_SDK_AK/HUAWEICLOUD_SDK_SK)", file=sys.stderr)
         print("  2. Credentials file: --credentials-file <path>", file=sys.stderr)
         sys.exit(1)
 
     region = args.region
     endpoint = f"modelarts.{region}.myhuaweicloud.com"
 
-    local_tz = datetime.now().astimezone().tzinfo
-    from_dt = datetime.strptime(args.from_date, "%Y-%m-%d").replace(tzinfo=local_tz)
-    to_dt = datetime.strptime(args.to_date, "%Y-%m-%d").replace(tzinfo=local_tz)
+    try:
+        with quality_context(
+            skill_name="huawei-cloud-maas-tokens-usage",
+            skill_version="1.0.0",
+            trigger_type="agent",
+            timeout_threshold_ms=120000,
+        ) as q:
+            q.input = {
+                "region": region,
+                "from": args.from_date,
+                "to": args.to_date,
+                "service_type": args.service_type,
+                "infer_type": args.infer_type,
+            }
 
-    project_id = get_project_id(ak, sk, region)
+            local_tz = datetime.now().astimezone().tzinfo
+            from_dt = datetime.strptime(args.from_date, "%Y-%m-%d").replace(tzinfo=local_tz)
+            to_dt = datetime.strptime(args.to_date, "%Y-%m-%d").replace(tzinfo=local_tz)
 
-    svc_name = SERVICE_TYPE_MAP.get(args.service_type, str(args.service_type))
+            project_id = get_project_id(ak, sk, region)
 
-    base_body = {
-        "service_type": args.service_type,
-        "timezone": _local_iana_tz(),
-        "infer_type": args.infer_type,
-    }
-    if args.api_keys is not None:
-        base_body["api_keys"] = args.api_keys
+            svc_name = SERVICE_TYPE_MAP.get(args.service_type, str(args.service_type))
 
-    max_days = 29
-    delta_days = (to_dt - from_dt).days
-    segments = []
-    if delta_days <= max_days:
-        segments.append((from_dt, to_dt))
-    else:
-        cur = from_dt
-        while cur < to_dt:
-            seg_end = min(cur + timedelta(days=max_days), to_dt)
-            segments.append((cur, seg_end))
-            cur = seg_end
+            base_body = {
+                "service_type": args.service_type,
+                "timezone": _local_iana_tz(),
+                "infer_type": args.infer_type,
+            }
+            if args.api_keys is not None:
+                base_body["api_keys"] = args.api_keys
 
-    total_req = 0
-    total_err = 0
-    total_token = 0.0
-    prompt_token = 0.0
-    completion_token = 0.0
-    raw_responses = []
+            max_days = 29
+            delta_days = (to_dt - from_dt).days
+            segments = []
+            if delta_days <= max_days:
+                segments.append((from_dt, to_dt))
+            else:
+                cur = from_dt
+                while cur < to_dt:
+                    seg_end = min(cur + timedelta(days=max_days), to_dt)
+                    segments.append((cur, seg_end))
+                    cur = seg_end
 
-    for seg_from, seg_to in segments:
-        body = dict(base_body)
-        body["start_time"] = int(seg_from.timestamp() * 1000)
-        body["end_time"] = int(seg_to.timestamp() * 1000)
-        data = show_statistics(endpoint, project_id, ak, sk, body)
-        total_req += data.get("total_request_count", 0)
-        total_err += data.get("total_error_count", 0)
-        total_token += data.get("total_token", 0)
-        prompt_token += data.get("total_prompt_token", 0)
-        completion_token += data.get("total_completion_token", 0)
-        if args.raw:
-            raw_responses.append({"segment": f"{seg_from.strftime('%Y-%m-%d')}~{seg_to.strftime('%Y-%m-%d')}", "data": data})
+            total_req = 0
+            total_err = 0
+            total_token = 0.0
+            prompt_token = 0.0
+            completion_token = 0.0
+            raw_responses = []
 
-    fail_rate = total_err / total_req * 100 if total_req > 0 else 0
-    tz_label = datetime.now().astimezone().strftime("%Z")
-    time_range = f"{from_dt.strftime('%Y-%m-%d 00:00:00')} ~ {to_dt.strftime('%Y-%m-%d 00:00:00')} ({tz_label})"
+            for seg_from, seg_to in segments:
+                body = dict(base_body)
+                body["start_time"] = int(seg_from.timestamp() * 1000)
+                body["end_time"] = int(seg_to.timestamp() * 1000)
+                data = show_statistics(endpoint, project_id, ak, sk, body)
+                total_req += data.get("total_request_count", 0)
+                total_err += data.get("total_error_count", 0)
+                total_token += data.get("total_token", 0)
+                prompt_token += data.get("total_prompt_token", 0)
+                completion_token += data.get("total_completion_token", 0)
+                if args.raw:
+                    raw_responses.append({"segment": f"{seg_from.strftime('%Y-%m-%d')}~{seg_to.strftime('%Y-%m-%d')}", "data": data})
 
-    col1_w = 20
-    col2_w = 22
-    sep = f"+{'─'*col1_w}+{'─'*col2_w}+"
-    row_fmt = f"| {{:<{col1_w}}} | {{:<{col2_w}}} |"
+            fail_rate = total_err / total_req * 100 if total_req > 0 else 0
+            tz_label = datetime.now().astimezone().strftime("%Z")
+            time_range = f"{from_dt.strftime('%Y-%m-%d 00:00:00')} ~ {to_dt.strftime('%Y-%m-%d 00:00:00')} ({tz_label})"
 
-    print()
-    print(f"MaaS {svc_name} Usage Statistics - Region: {region}")
-    print(sep)
-    print(row_fmt.format("Metric", "Value"))
-    print(sep.replace("─", "═"))
-    print(row_fmt.format("Total Tokens", fmt_tokens(total_token)))
-    print(row_fmt.format("Prompt Tokens", fmt_tokens(prompt_token)))
-    print(row_fmt.format("Completion Tokens", fmt_tokens(completion_token)))
-    print(row_fmt.format("Total Requests", f"{total_req:,}"))
-    print(row_fmt.format("Total Errors", f"{total_err:,}"))
-    print(row_fmt.format("Error Rate", f"{fail_rate:.2f}%"))
-    print(sep)
-    print(f"Period: {time_range}")
+            col1_w = 20
+            col2_w = 22
+            sep = f"+{'─'*col1_w}+{'─'*col2_w}+"
+            row_fmt = f"| {{:<{col1_w}}} | {{:<{col2_w}}} |"
 
-    if args.raw:
-        print(f"\nRaw API Response:")
-        print(json.dumps(raw_responses, indent=2, ensure_ascii=False))
+            print()
+            print(f"MaaS {svc_name} Usage Statistics - Region: {region}")
+            print(sep)
+            print(row_fmt.format("Metric", "Value"))
+            print(sep.replace("─", "═"))
+            print(row_fmt.format("Total Tokens", fmt_tokens(total_token)))
+            print(row_fmt.format("Prompt Tokens", fmt_tokens(prompt_token)))
+            print(row_fmt.format("Completion Tokens", fmt_tokens(completion_token)))
+            print(row_fmt.format("Total Requests", f"{total_req:,}"))
+            print(row_fmt.format("Total Errors", f"{total_err:,}"))
+            print(row_fmt.format("Error Rate", f"{fail_rate:.2f}%"))
+            print(sep)
+            print(f"Period: {time_range}")
+
+            if args.raw:
+                print(f"\nRaw API Response:")
+                print(json.dumps(raw_responses, indent=2, ensure_ascii=False))
+
+            q.output = {
+                "total_tokens": total_token,
+                "prompt_tokens": prompt_token,
+                "completion_tokens": completion_token,
+                "total_requests": total_req,
+                "total_errors": total_err,
+                "error_rate": round(fail_rate, 2),
+                "period": time_range,
+            }
+    except Exception as exc:
+        sys.stderr.write(f"Error: {exc}\n")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

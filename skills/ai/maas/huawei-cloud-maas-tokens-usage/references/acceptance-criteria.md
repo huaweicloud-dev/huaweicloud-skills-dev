@@ -26,10 +26,11 @@ python3 scripts/maas_rest_usage_stats.py --from 2026-05-08 --to 2026-05-21
 python3 scripts/maas_rest_usage_stats.py --from 2026-05-08 --to 2026-05-21 --credentials-file /path/to/aksk.txt
 ```
 
-**Error:** Hardcode AK/SK in code
+**Forbidden pattern (never do this):** Hardcode AK/SK in code
 ```python
-ak = "WTEBXXXXXX"
-sk = "xxxxxxxxxx"
+# forbidden: never hardcode credentials
+ak = "<YOUR_AK>"   # placeholder only
+sk = "<YOUR_SK>"   # placeholder only
 ```
 
 ### Credentials File Format
