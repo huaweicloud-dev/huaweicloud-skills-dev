@@ -1,0 +1,29 @@
+# Skill Gate Report — huawei-cloud-obs-list-folders
+
+Generated: 2026-08-07 (Phase 6 security audit)
+
+## Audit tools
+
+| Tool | Status | Result |
+|------|--------|--------|
+| gitleaks detect (secrets) | available | PASS — no leaks found |
+| markdownlint-cli2 (v0.23.2) | available | PASS — 0 issues in 6 md files |
+| hwcloud-spec (validate-skill.sh) | built-in | PASS — 27/27 checks (Critical=0 High=0 Medium=0 Low=0) |
+| skillcheck (agentskills.io) | NOT INSTALLED | skipped — dependency missing (reported, not marked pass) |
+
+## Security audit coverage
+
+| Check | Coverage | Result |
+|-------|----------|--------|
+| Secret leak detection | AK/SK hardcoding grep, `hcloud OBS config` guidance only (no credentials), report-output masking (gitleaks + manual scan) | PASS |
+| Vulnerability patterns | grep for eval(/exec(/os.system/subprocess shell=True/reverse shell/base64 decode; none found in scripts/ or references/ | PASS |
+| Dependency security | huaweicloudsdkobs is the only third-party dep (pip, latest); vendored skill_quality_sdk.py is identical to the reference copy (diff verified) | PASS |
+| Insecure configuration | No hardcoded endpoints beyond the documented obsutil default; no weak defaults; read-only operations only | PASS |
+
+## Findings
+
+- No ERROR/CRITICAL findings.
+- No WARNING-level findings requiring user acceptance.
+- skillcheck unavailable in the runtime environment — reported as a missing dependency, not marked as passed.
+
+Verdict: **PASS**

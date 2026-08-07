@@ -1,0 +1,88 @@
+{
+  "skill_name": "huawei-cloud-obs-list-folders",
+  "region": "cn-north-4",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List OBS buckets (CLI auto)",
+      "command": "python3 scripts/list_obs_folders.py --buckets-only",
+      "expected": "One bucket name per line, at least one bucket (obs://<name> without scheme)",
+      "type": "readonly",
+      "executor": "script"
+    },
+    {
+      "id": "TC-02",
+      "name": "List folders at bucket root (CLI auto)",
+      "command": "python3 scripts/list_obs_folders.py --bucket cts-obs-bucket-test --folders-only",
+      "expected": "Folder names one per line, includes obs://cts-obs-bucket-test/CloudTraces/",
+      "type": "readonly",
+      "executor": "script"
+    },
+    {
+      "id": "TC-03",
+      "name": "List sub-folders under prefix (CLI auto) — BUG-002 regression",
+      "command": "python3 scripts/list_obs_folders.py --bucket cts-obs-bucket-test --prefix CloudTraces --folders-only",
+      "expected": "Real sub-folder CloudTraces/cn-north-4/ listed; the prefix itself (obs://.../CloudTraces/) NOT listed",
+      "type": "readonly",
+      "executor": "script"
+    },
+    {
+      "id": "TC-03b",
+      "name": "Prefix with trailing slash — BUG-002 regression",
+      "command": "python3 scripts/list_obs_folders.py --bucket cts-obs-bucket-test --prefix CloudTraces/ --folders-only",
+      "expected": "Same sub-folder result as TC-03 (CloudTraces/cn-north-4/), prefix itself excluded",
+      "type": "readonly",
+      "executor": "script"
+    },
+    {
+      "id": "TC-04",
+      "name": "List folders via SDK executor — BUG-001 regression",
+      "command": "python3 scripts/list_obs_folders.py --bucket cts-obs-bucket-test --folders-only --executor sdk",
+      "expected": "Folder names one per line, or a clear Chinese error (AccessDenied/NoSuchBucket/InvalidAccessKeyId/未配置/错误); MUST NOT print a raw exception",
+      "type": "readonly",
+      "executor": "script"
+    },
+    {
+      "id": "TC-05",
+      "name": "Nonexistent bucket error (auto)",
+      "command": "python3 scripts/list_obs_folders.py --bucket no-such-bucket-xyz --folders-only",
+      "expected": "exit 1, stderr contains Chinese NoSuchBucket hint, stdout empty",
+      "type": "negative",
+      "executor": "script"
+    },
+    {
+      "id": "TC-06",
+      "name": "Buckets via SDK executor — BUG-001 regression",
+      "command": "python3 scripts/list_obs_folders.py --buckets-only --executor sdk",
+      "expected": "Bucket names one per line, or empty (env account owns 0 buckets), or a clear Chinese error; MUST NOT crash with a raw exception",
+      "type": "readonly",
+      "executor": "script"
+    },
+    {
+      "id": "TC-07",
+      "name": "SDK availability check",
+      "command": "python3 -c \"from huaweicloudsdkobs.v1.obs_client import ObsClient; print('SDK OK')\"",
+      "expected": "SDK import succeeds",
+      "type": "syntax",
+      "executor": "sdk"
+    },
+    {
+      "id": "TC-08",
+      "name": "Quality SDK availability check",
+      "command": "python3 -c \"import sys; sys.path.insert(0, 'scripts'); from skill_quality_sdk import quality_report, QualityError; print('QUALITY SDK OK')\"",
+      "expected": "skill_quality_sdk imports successfully",
+      "type": "syntax",
+      "executor": "sdk"
+    },
+    {
+      "id": "TC-09",
+      "name": "SDK ListBuckets response parsing (unit, wrapper shape) — BUG-001 regression",
+      "command": "python3 -c \"import sys; sys.path.insert(0, 'scripts'); import list_obs_folders as m; print(m.list_buckets_sdk(type('C',(),{'list_buckets':lambda s,r: type('R',(),{'to_dict':lambda s:{'buckets':{'bucket':[{'name':'a'}]}}})()})()))\"",
+      "expected": "['a'] — parses the {\"buckets\": {\"bucket\": [...]}} wrapper shape without crashing",
+      "type": "syntax",
+      "executor": "sdk"
+    }
+  ],
+  "env_vars_required": ["HUAWEI_ACCESS_KEY", "HUAWEI_SECRET_KEY"],
+  "notes": "只读操作，无资源创建/修改/删除风险。测试 bucket 可通过 TEST_OBS_BUCKET 覆盖。TC-03/03b 依赖 cts-obs-bucket-test 下存在 CloudTraces/cn-north-4/ 子文件夹。"
+}
