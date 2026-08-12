@@ -16,4 +16,5 @@
 | 12 | Every file uses an allowed extension | ✅ |
 | 13 | No hardcoded credentials in any file | ✅ |
 | 14 | PR diff changes only the `huawei-cloud-vpc-list` skill directory | ✅ |
-| 15 | All six creation phases complete | ✅ |
+| 15 | Accurate VPC count: paginates with `--marker` until `next_marker` is absent, never reports `current_count` alone | ✅ |
+| 16 | All six creation phases complete | ✅ |

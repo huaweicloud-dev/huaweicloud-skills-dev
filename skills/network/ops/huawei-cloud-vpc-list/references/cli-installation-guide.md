@@ -19,53 +19,36 @@ sudo mv hcloud /usr/local/bin/
 pip3 install huaweicloudcli
 ```
 
-### Option C: Install via npm (alternative)
+## Configure Authentication (AK/SK)
+
+Run the interactive configuration wizard:
 
 ```bash
-npm install -g @huaweicloud/hcloud
+hcloud configure init
 ```
 
-### Verify Installation
+Or set the profile non-interactively:
+
+```bash
+hcloud configure set --cli-profile=default --cli-mode=AKSK \
+  --cli-access-key=YOUR_ACCESS_KEY --cli-secret-key=YOUR_SECRET_KEY \
+  --cli-region=cn-north-4 --cli-project-id=YOUR_PROJECT_ID
+```
+
+> **Security:** Never hardcode credentials in scripts or documentation. Read AK/SK from
+> environment variables (`HUAWEICLOUD_SDK_AK`, `HUAWEICLOUD_SDK_SK`) or a local secure
+> profile. The commands above should be run by the user in their own shell.
+
+## Verify Installation
 
 ```bash
 hcloud version
-```
-
-## Configure Authentication (AK/SK)
-
-KooCLI needs an AK/SK profile before it can call Huawei Cloud APIs:
-
-```bash
-hcloud configure set --cli-profile=default --cli-access-key={AccessKeyId} --cli-secret-key={SecretAccessKey} --cli-region=cn-north-4 --cli-project-id={ProjectId}
-```
-
-Or run the interactive wizard:
-
-```bash
-hcloud configure
-```
-
-Verify authentication:
-
-```bash
 hcloud configure list
 ```
 
-## Prefer Environment Variables
+## Region and Project
 
-The skill reads credentials from the environment when present. The recommended
-variables (in priority order) are:
-
-| Priority | Variable | Description |
-|----------|----------|-------------|
-| 1 | `HUAWEI_ACCESS_KEY` / `HUAWEI_SECRET_KEY` | Primary AK/SK pair |
-| 2 | `HWC_AK` / `HWC_SK` | Alternative AK/SK pair |
-
-Never ask a user to paste their AK/SK into a conversation; have them set the
-environment variables in their own terminal, or configure them into the KooCLI
-profile.
-
-## Notes
-
-- This skill is read-only and uses `VPC ListVpcs` (v3/v2). No write permissions are needed.
-- To see all supported regions for the VPC service: `hcloud VPC ListVpcs/v3 --cli-region=cn-north-4 --help`.
+- The CLI uses the region and project bound to the configured profile.
+- Override per-command with `--cli-region={region}`.
+- The VPC API is region-scoped; the `project_id` in the API path is derived from the
+  configured profile automatically.
