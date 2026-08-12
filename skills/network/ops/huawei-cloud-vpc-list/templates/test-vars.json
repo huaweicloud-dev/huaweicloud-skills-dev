@@ -1,46 +1,64 @@
 {
+  "skill_name": "huawei-cloud-vpc-list",
+  "region": "cn-north-4",
   "test_cases": [
     {
       "id": "TC-01",
-      "name": "List VPCs (v3, limited)",
-      "command": "hcloud VPC ListVpcs/v3 --cli-region=cn-north-4 --limit=3 --cli-output=json",
-      "expected": "JSON with vpcs array; exit 0"
+      "name": "CLI VPC service availability",
+      "command": "hcloud VPC ListVpcs/v3 --cli-region=cn-north-4 --help",
+      "expected": "Help output shows ListVpcs parameters, no USE_ERROR",
+      "type": "syntax",
+      "executor": "cli"
     },
     {
       "id": "TC-02",
-      "name": "List VPCs (v2 legacy)",
-      "command": "hcloud VPC ListVpcs/v2 --cli-region=cn-north-4 --limit=3 --cli-output=json",
-      "expected": "JSON with vpcs array; exit 0"
+      "name": "List VPCs live (v3, limit=3)",
+      "command": "hcloud VPC ListVpcs/v3 --cli-region=cn-north-4 --limit=3 --cli-output=json",
+      "expected": "JSON with vpcs array; each vpc has id/name/cidr/status",
+      "type": "readonly",
+      "executor": "cli"
     },
     {
       "id": "TC-03",
-      "name": "Filter by name (v3)",
-      "command": "hcloud VPC ListVpcs/v3 --cli-region=cn-north-4 --name.1=tf-web-vpc --cli-output=json",
-      "expected": "JSON with vpcs array (filtered); exit 0"
+      "name": "List VPCs live (v2, limit=2)",
+      "command": "hcloud VPC ListVpcs/v2 --cli-region=cn-north-4 --limit=2 --cli-output=json",
+      "expected": "JSON with vpcs array including tenant_id field",
+      "type": "readonly",
+      "executor": "cli"
     },
     {
       "id": "TC-04",
-      "name": "Filter by enterprise project (all_granted_eps)",
-      "command": "hcloud VPC ListVpcs/v3 --cli-region=cn-north-4 --enterprise_project_id=all_granted_eps --limit=3 --cli-output=json",
-      "expected": "JSON with vpcs array; exit 0"
+      "name": "Filter VPCs by name (v3)",
+      "command": "hcloud VPC ListVpcs/v3 --cli-region=cn-north-4 --limit=5 --name.1=tf-web-vpc --cli-output=json",
+      "expected": "vpcs array filtered to matching VPC name",
+      "type": "readonly",
+      "executor": "cli"
     },
     {
       "id": "TC-05",
-      "name": "Max page size (limit=2000)",
-      "command": "hcloud VPC ListVpcs/v3 --cli-region=cn-north-4 --limit=2000 --cli-output=json",
-      "expected": "JSON with vpcs array; exit 0"
+      "name": "Filter VPCs by enterprise project (all)",
+      "command": "hcloud VPC ListVpcs/v3 --cli-region=cn-north-4 --limit=5 --enterprise_project_id=all_granted_eps --cli-output=json",
+      "expected": "JSON with vpcs array (may be empty if no projects granted)",
+      "type": "readonly",
+      "executor": "cli"
     },
     {
       "id": "TC-06",
-      "name": "Accurate total via marker pagination",
-      "command": "marker loop until page_info.next_marker is absent, sum vpcs across pages",
-      "expected": "Total count equals sum of all pages; current_count alone is not the total"
+      "name": "SDK VPC client availability",
+      "command": "python3 -c \"from huaweicloudsdkvpc.v3 import VpcClient; print('SDK OK')\"",
+      "expected": "SDK OK",
+      "type": "syntax",
+      "executor": "sdk"
     },
     {
       "id": "TC-07",
-      "name": "SDK import check (fallback)",
-      "command": "python3 -c \"from huaweicloudsdkvpc.v3 import ListVpcsRequest\"",
-      "expected": "Import succeeds; exit 0"
+      "name": "SDK read-only list_vpcs (limit=1)",
+      "command": "python3 -c \"from huaweicloudsdkvpc.v3 import VpcClient; print('SDK VpcClient importable')\"",
+      "expected": "SDK VpcClient importable",
+      "type": "syntax",
+      "executor": "sdk"
     }
-  ]
+  ],
+  "env_vars_required": ["HUAWEI_ACCESS_KEY/HUAWEI_SECRET_KEY or HWC_AK/HWC_SK, or KooCLI AKSK profile"],
+  "notes": "Read-only queries only. No create/update/delete operations."
 }

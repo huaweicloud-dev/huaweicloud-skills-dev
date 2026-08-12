@@ -23,19 +23,14 @@ to list VPCs is `vpc:vpc:list`. The recommended least-privilege IAM policy is:
 }
 ```
 
-## Why These Permissions
-
-| Action | Required For | Scope |
-|--------|--------------|-------|
-| `vpc:vpc:list` | List VPCs via the VPC API (v3 `ListVpcs`) | All projects the user can access |
-| `vpc:vpcs:list` | Compatibility action name for listing VPCs | All projects the user can access |
-
 ## Notes
 
-- No write permissions (`vpc:vpc:create`, `vpc:vpc:update`, `vpc:vpc:delete`) are granted —
-  this skill is strictly read-only.
-- To list VPCs of all enterprise projects the user is granted access to, the IAM user needs
-  the `all_granted_eps` scope on `vpc:vpc:list` (this is a property of the enterprise-project
-  permission model, granted through the IAM user's enterprise-project authorization).
-- The AK/SK used by the CLI must belong to a user with the above policy attached (directly or
-  via a user group).
+- Only `list` actions are granted — no `create`, `update`, or `delete` actions.
+- `vpc:vpc:list` is the VPC API permission for querying the VPC list (v3); the
+  v2 API uses the same read permission.
+- If the user only needs to inspect VPCs of their own project, no enterprise-project
+  cross-account access is required. Listing across all enterprise projects
+  (`enterprise_project_id=all_granted_eps`) requires the user to have granted
+  permissions to the relevant enterprise projects.
+- Use the pre-defined Huawei Cloud role `VPC ReadOnlyAccess` if a managed role
+  is preferred over a custom policy.

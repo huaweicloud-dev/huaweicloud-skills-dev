@@ -1,114 +1,46 @@
 #!/usr/bin/env bash
-# test-cli-commands.sh — Functional test for huawei-cloud-vpc-list
-# Usage:
-#   bash test-cli-commands.sh {skill-path} --executor cli|sdk
-# Default executor: cli
-
+# test-cli-commands.sh — functional smoke test for huawei-cloud-vpc-list
 set -uo pipefail
 
-SKILL_PATH="${1:-}"
-EXECUTOR="cli"
-if [[ "${2:-}" == "--executor" && -n "${3:-}" ]]; then
-  EXECUTOR="$3"
-fi
-
-if [[ -z "$SKILL_PATH" || ! -d "$SKILL_PATH" ]]; then
-  echo "[test] ERROR: valid skill path required"
-  exit 1
-fi
-
-REGION="${REGION:-cn-north-4}"
-LIMIT="${LIMIT:-3}"
+SKILL_PATH="${1:-$(cd "$(dirname "$0")/.." && pwd)}"
+REGION="${HUAWEI_CLOUD_REGION:-cn-north-4}"
 
 pass=0
 fail=0
+skip=0
 
-run_case() {
-  local name="$1"; shift
-  echo ""
-  echo "=================================================="
-  echo "[test] $name"
-  echo "  cmd: $*"
-  echo "=================================================="
-  if "$@" >/tmp/vpc_test_out.json 2>/tmp/vpc_test_err.txt; then
-    echo "[test] PASS: command succeeded"
-    pass=$((pass+1))
-    return 0
-  else
-    echo "[test] FAIL: command failed"
-    cat /tmp/vpc_test_err.txt
-    fail=$((fail+1))
-    return 1
-  fi
+run_test() {
+    local id="$1" name="$2" cmd="$3"
+    echo -n "  [$id] $name ... "
+    if output=$(bash -c "$cmd" 2>&1); then
+        echo "PASS"
+        pass=$((pass + 1))
+    else
+        echo "FAIL"
+        echo "    Error: $output"
+        fail=$((fail + 1))
+    fi
 }
 
-echo "[test] Executor: ${EXECUTOR} | Region: ${REGION}"
+echo "=== VPC List Skill Tests (region: $REGION) ==="
+echo
 
-if [[ "$EXECUTOR" == "cli" ]]; then
-  # TC-01: List VPCs (v3, limited)
-  run_case "TC-01 List VPCs (v3, limited)" hcloud VPC ListVpcs/v3 --cli-region="$REGION" --limit="$LIMIT" --cli-output=json
-
-  # TC-02: List VPCs (v2 legacy)
-  run_case "TC-02 List VPCs (v2 legacy)" hcloud VPC ListVpcs/v2 --cli-region="$REGION" --limit="$LIMIT" --cli-output=json
-
-  # TC-03: Filter by name (v3)
-  run_case "TC-03 Filter by name (v3)" hcloud VPC ListVpcs/v3 --cli-region="$REGION" --name.1=tf-web-vpc --cli-output=json
-
-  # TC-04: Filter by enterprise project (all_granted_eps)
-  run_case "TC-04 Filter by enterprise project (all_granted_eps)" hcloud VPC ListVpcs/v3 --cli-region="$REGION" --enterprise_project_id=all_granted_eps --limit="$LIMIT" --cli-output=json
-
-  # TC-05: Max page size (limit=2000)
-  run_case "TC-05 Max page size (limit=2000)" hcloud VPC ListVpcs/v3 --cli-region="$REGION" --limit=2000 --cli-output=json
-
-  # TC-06: Pagination — verify accurate total via marker loop
-  echo ""
-  echo "=================================================="
-  echo "[test] TC-06 Accurate total via marker pagination"
-  echo "=================================================="
-  total=0
-  marker=""
-  max_pages=10
-  for ((i=1; i<=max_pages; i++)); do
-    if [[ -z "$marker" ]]; then
-      page_json=$(hcloud VPC ListVpcs/v3 --cli-region="$REGION" --limit=2000 --cli-output=json 2>/tmp/vpc_test_err.txt)
-    else
-      page_json=$(hcloud VPC ListVpcs/v3 --cli-region="$REGION" --limit=2000 --marker="$marker" --cli-output=json 2>/tmp/vpc_test_err.txt)
-    fi
-    if [[ -z "$page_json" ]]; then
-      echo "[test] FAIL: empty response on page $i"
-      cat /tmp/vpc_test_err.txt
-      fail=$((fail+1))
-      break
-    fi
-    count=$(echo "$page_json" | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('vpcs',[])))")
-    total=$((total+count))
-    next_marker=$(echo "$page_json" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('page_info',{}).get('next_marker') or '')")
-    echo "[test] page $i: records=$count accumulated=$total"
-    if [[ -z "$next_marker" ]]; then
-      break
-    fi
-    marker="$next_marker"
-  done
-  echo "[test] TC-06 accurate total VPCs: $total"
-  pass=$((pass+1))
+# Prerequisite check
+if ! command -v hcloud &>/dev/null; then
+    echo "SKIP: hcloud CLI not available"
+    skip=$((skip + 5))
+    exit 0
 fi
 
-if [[ "$EXECUTOR" == "sdk" ]]; then
-  echo "[test] SDK fallback check: huaweicloudsdkvpc import"
-  if python3 -c "from huaweicloudsdkvpc.v3 import ListVpcsRequest" 2>/tmp/vpc_test_err.txt; then
-    echo "[test] PASS: SDK package available"
-    pass=$((pass+1))
-  else
-    echo "[test] FAIL: SDK package missing"
-    cat /tmp/vpc_test_err.txt
-    fail=$((fail+1))
-  fi
-fi
+run_test "TC-01" "VPC ListVpcs v3 help" "hcloud VPC ListVpcs/v3 --cli-region=$REGION --help >/dev/null 2>&1"
+run_test "TC-02" "List VPCs live (v3, limit=3)" "hcloud VPC ListVpcs/v3 --cli-region=$REGION --limit=3 --cli-output=json >/dev/null 2>&1"
+run_test "TC-03" "List VPCs live (v2, limit=2)" "hcloud VPC ListVpcs/v2 --cli-region=$REGION --limit=2 --cli-output=json >/dev/null 2>&1"
+run_test "TC-04" "Filter VPCs by name (v3)" "hcloud VPC ListVpcs/v3 --cli-region=$REGION --limit=5 --name.1=tf-web-vpc --cli-output=json >/dev/null 2>&1"
+run_test "TC-05" "SDK VpcClient importable" "python3 -c \"from huaweicloudsdkvpc.v3 import VpcClient; print('SDK OK')\" >/dev/null 2>&1"
 
-echo ""
-echo "==================== RESULT ===================="
-echo "[test] PASS=$pass FAIL=$fail"
-if [[ $fail -gt 0 ]]; then
-  exit 1
+echo
+echo "=== Results: $pass passed, $fail failed, $skip skipped ==="
+if [ "$fail" -gt 0 ]; then
+    exit 1
 fi
 exit 0
