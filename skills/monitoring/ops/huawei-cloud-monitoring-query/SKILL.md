@@ -1,6 +1,6 @@
 ---
 name: huawei-cloud-monitoring-query
-description: "Queries Huawei Cloud monitoring and enterprise project resources (CES/EPS). Covers alarm rules, alarm histories, alarm templates, dashboards, notification masks, resource groups, one-click alarms, and enterprise projects (list/detail/quotas/bound resources/migration records). No write operations. Use this skill when the user needs to check alarm status, view monitoring dashboards, query alarm rules, or manage enterprise project info. Triggers: 云监控, 告警, 告警规则, 告警历史, 仪表盘, 企业项目, CES, EPS, 告警模板, 资源分组, alarm, monitoring, alert."
+description: "Queries Huawei Cloud monitoring and enterprise project resources (CES/EPS). Covers alarm rules, alarm histories, alarm templates, dashboards, notification masks, resource groups, one-click alarms, and enterprise projects (list/detail/quotas/bound resources/migration records). No write operations. Use this skill when the user needs to check alarm status, view monitoring dashboards, query alarm rules, or manage enterprise project info. Triggers include: 云监控, 告警, 告警规则, 告警历史, 仪表盘, 企业项目, CES, EPS, 告警模板, 资源分组, alarm, monitoring, alert."
 ---
 # Huawei Cloud Resource Query
 
@@ -48,6 +48,27 @@ Capabilities provided by this skill include:
 
 ---
 
+## Unsupported Service Types (不支持的服务类型)
+
+This skill ONLY supports queries for **CES (Cloud Eye, 云监控服务)** and **EPS (Enterprise Project, 企业项目服务)**. It does NOT query monitoring data of other Huawei Cloud services. The following cross-domain monitoring-data queries are NOT supported by this skill:
+
+| Service | Name | Correct Entry Point |
+|---------|------|---------------------|
+| RDS | Relational Database Service (关系型数据库) | RDS console or CES dashboard |
+| CCE | Cloud Container Engine (云容器引擎) | CCE console or CES dashboard |
+| OBS | Object Storage Service (对象存储服务) | OBS console or CES dashboard |
+| ELB | Elastic Load Balance (弹性负载均衡) | ELB console or CES dashboard |
+| ECS | Elastic Cloud Server (弹性云服务器) | ECS console or CES dashboard |
+| Other services | Any Huawei Cloud service other than CES/EPS | Its own service console or CES dashboard |
+
+When the user requests monitoring data of RDS / CCE / OBS / ELB / ECS or any other non-CES/EPS service, reject the request and clearly tell the user:
+
+1. This skill only supports CES/EPS queries;
+2. Such monitoring data must be viewed via the service console or the CES dashboard;
+3. The supported query scope of this skill: alarm rules, alarm histories, alarm templates, dashboards, notification masks, resource groups, one-click alarms, metrics, enterprise projects.
+
+---
+
 ## Usage Principles
 
 Important: Script paths executed within this skill are all relative to the skill directory, which is the directory where this SKILL.md is located.
@@ -92,7 +113,7 @@ If the environment check fails, fix the issues before proceeding with other scri
 
 ---
 
-## Execution Flow
+## Workflow (Execution Flow)
 
 **When this skill is invoked, you must follow these steps. Do not wait for the user to prompt again:**
 
@@ -124,6 +145,23 @@ If the environment check fails, fix the issues as prompted and re-run until it p
 - Do not read the source code of scripts in the scripts directory; just follow the instructions in guide.md
 - Cache results when the output is large
 - The `--project_id` parameter is optional; if not provided, it is automatically obtained via IAM API based on region
+
+---
+
+## Core Commands
+
+This skill does NOT use KooCLI. All queries are executed via the Python
+query scripts under `scripts/<service_category>/` (CES / EPS / IAM), invoked
+through `skill action=exec`. Before each query, run the environment check and
+the script `-h` usage view as described in the Workflow section above.
+
+- Environment check:
+  - Linux / macOS: `skill action=exec: bash skill://scripts/check_env.sh`
+  - Windows: `skill action=exec: powershell -ExecutionPolicy Bypass -File skill://scripts/check_env.ps1`
+- Query example (CES alarm rules):
+  - Linux / macOS: `skill action=exec: skill://.venv/bin/python3 skill://scripts/ces/list_alarm_rules.py --region cn-north-4`
+  - Windows: `skill action=exec: skill://.venv/Scripts/python3.exe skill://scripts/ces/list_alarm_rules.py --region cn-north-4`
+- For the exact script paths and parameters, read `references/<service>/guide.md` first.
 
 ---
 
@@ -182,7 +220,7 @@ Query results are output in JSON format and contain the following common fields:
 
 ---
 
-## Reference Documentation
+## Reference Documents
 
 - Query script usage guides for each service: `references/<service>/guide.md`
 
