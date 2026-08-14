@@ -1,0 +1,41 @@
+{
+  "region": "cn-north-4",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List SFS file systems (CLI)",
+      "command": "hcloud SFSTurbo ListShares --cli-region=cn-north-4 --limit=5 --cli-output=json",
+      "expected": "HTTP 200, JSON with shares array"
+    },
+    {
+      "id": "TC-02",
+      "name": "Extract SFS names (CLI + jq)",
+      "command": "hcloud SFSTurbo ListShares --cli-region=cn-north-4 --limit=5 --cli-output=json | jq -r '.shares[].name'",
+      "expected": "One name per line"
+    },
+    {
+      "id": "TC-03",
+      "name": "List SFS with pagination (CLI)",
+      "command": "hcloud SFSTurbo ListShares --cli-region=cn-north-4 --limit=5 --offset=0 --cli-output=json",
+      "expected": "HTTP 200, JSON with shares array"
+    },
+    {
+      "id": "TC-04",
+      "name": "SDK fallback: list_shares",
+      "command": "python3 -c \"from huaweicloudsdksfsturbo.v1 import SFSTurboClient, ListSharesRequest; ...\"",
+      "expected": "resp.shares present"
+    },
+    {
+      "id": "TC-05",
+      "name": "Wrapper: names-only",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/list_sfsturbo_shares.py --names-only",
+      "expected": "One SFS name per line"
+    },
+    {
+      "id": "TC-06",
+      "name": "Wrapper: SDK executor",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/list_sfsturbo_shares.py --executor sdk",
+      "expected": "JSON lines with name/id/status/size"
+    }
+  ]
+}
