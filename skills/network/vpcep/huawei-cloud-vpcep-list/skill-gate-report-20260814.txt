@@ -1,0 +1,32 @@
+# Skill Gate Report — huawei-cloud-vpcep-list
+
+Timestamp: 2026-08-14T15:20:00Z
+Skill: skills/network/vpcep/huawei-cloud-vpcep-list
+
+## Audit Results
+
+| Tool | Verdict | Details |
+|------|---------|---------|
+| validate-skill.sh (hwcloud-spec) | PASS | 30 PASS, 0 FAIL, 2 WARN |
+| markdownlint-cli2 | PASS | 0 issues in 6 files (MD032 fixed) |
+| gitleaks | PASS | 0 leaks in skill dir (isolated scan) |
+| skillcheck | NOT AVAILABLE | pip install skillcheck: no matching distribution; reported as missing dependency |
+
+## WARN items (accepted)
+
+1. 2 CLI commands in frontmatter/overview prose lack PascalCase operation check context
+   (prose references `hcloud VPCEP ListEndpoints` / `ListEndpointService` — all
+   executable Core Commands use PascalCase + --cli-region)
+2. 3 CLI command mentions in prose omit --cli-region (same prose references;
+   every executable command includes --cli-region)
+
+## Notes
+
+- Repo-wide gitleaks scan reports 4 pre-existing leaks in OTHER skills
+  (terraform-generator, sac-new-api) — not introduced by this skill
+- Dependency security: skill depends only on huaweicloudsdkvpcep (official
+  Huawei SDK) + Python stdlib; no third-party runtime deps
+- No credentials hardcoded; AK/SK read from env only
+- No cross-skill references
+
+## Verdict: PASS (no ERROR/CRITICAL findings)

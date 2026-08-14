@@ -1,0 +1,53 @@
+{
+  "region": "cn-north-4",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List VPC endpoints (CLI)",
+      "command": "hcloud VPCEP ListEndpoints --cli-region=cn-north-4 --limit=5 --cli-output=json",
+      "expected": "HTTP 200, JSON with endpoints array"
+    },
+    {
+      "id": "TC-02",
+      "name": "Extract endpoint names (CLI + jq)",
+      "command": "hcloud VPCEP ListEndpoints --cli-region=cn-north-4 --limit=5 --cli-output=json | jq -r '.endpoints[].endpoint_service_name'",
+      "expected": "One endpoint_service_name per line"
+    },
+    {
+      "id": "TC-03",
+      "name": "List endpoints with pagination (CLI)",
+      "command": "hcloud VPCEP ListEndpoints --cli-region=cn-north-4 --limit=5 --offset=0 --cli-output=json",
+      "expected": "HTTP 200, JSON with endpoints array"
+    },
+    {
+      "id": "TC-04",
+      "name": "List VPC endpoint services (CLI)",
+      "command": "hcloud VPCEP ListEndpointService --cli-region=cn-north-4 --limit=5 --cli-output=json",
+      "expected": "HTTP 200, JSON with endpoint_services array"
+    },
+    {
+      "id": "TC-05",
+      "name": "Extract service names (CLI + jq)",
+      "command": "hcloud VPCEP ListEndpointService --cli-region=cn-north-4 --limit=5 --cli-output=json | jq -r '.endpoint_services[].service_name'",
+      "expected": "One service_name per line"
+    },
+    {
+      "id": "TC-06",
+      "name": "List endpoint services with status filter (CLI)",
+      "command": "hcloud VPCEP ListEndpointService --cli-region=cn-north-4 --limit=5 --status=available --cli-output=json",
+      "expected": "HTTP 200, JSON with endpoint_services array"
+    },
+    {
+      "id": "TC-07",
+      "name": "SDK fallback: list_endpoints",
+      "command": "python3 -c \"from huaweicloudsdkvpcep.v1 import VpcepClient, ListEndpointsRequest; ...\"",
+      "expected": "resp.endpoints present"
+    },
+    {
+      "id": "TC-08",
+      "name": "SDK fallback: list_endpoint_service",
+      "command": "python3 -c \"from huaweicloudsdkvpcep.v1 import VpcepClient, ListEndpointServiceRequest; ...\"",
+      "expected": "resp.endpoint_services present"
+    }
+  ]
+}
