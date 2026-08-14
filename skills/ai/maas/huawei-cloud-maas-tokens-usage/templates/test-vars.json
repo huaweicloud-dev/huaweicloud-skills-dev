@@ -1,0 +1,58 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "Preset service usage - last 7 days",
+      "command": "python3 scripts/maas_rest_usage_stats.py --from 2026-07-31 --to 2026-08-07",
+      "expected": "exit 0, table with Total Tokens / Total Requests / Total Errors / Error Rate, HTTP 200 via MaaS ShowStatistics API"
+    },
+    {
+      "id": "TC-02",
+      "name": "Preset service usage - last 14 days",
+      "command": "python3 scripts/maas_rest_usage_stats.py --from 2026-07-24 --to 2026-08-07",
+      "expected": "exit 0, table with Total Tokens / Total Requests / Total Errors / Error Rate"
+    },
+    {
+      "id": "TC-03",
+      "name": "Preset service usage - last 30 days",
+      "command": "python3 scripts/maas_rest_usage_stats.py --from 2026-07-08 --to 2026-08-07",
+      "expected": "exit 0, table with Total Tokens / Total Requests / Total Errors / Error Rate"
+    },
+    {
+      "id": "TC-04",
+      "name": "Custom time range - 45 days (auto segmented)",
+      "command": "python3 scripts/maas_rest_usage_stats.py --from 2026-06-23 --to 2026-08-07",
+      "expected": "exit 0, range > 29 days auto-segmented and aggregated, table output"
+    },
+    {
+      "id": "TC-05",
+      "name": "My service (service-type 1)",
+      "command": "python3 scripts/maas_rest_usage_stats.py --from 2026-07-31 --to 2026-08-07 --service-type 1",
+      "expected": "exit 0, table labeled 'MaaS My Service Usage Statistics'"
+    },
+    {
+      "id": "TC-06",
+      "name": "Custom endpoint (service-type 4)",
+      "command": "python3 scripts/maas_rest_usage_stats.py --from 2026-07-31 --to 2026-08-07 --service-type 4",
+      "expected": "exit 0, table labeled 'MaaS Custom Endpoint Usage Statistics'"
+    },
+    {
+      "id": "TC-07",
+      "name": "Batch infer type",
+      "command": "python3 scripts/maas_rest_usage_stats.py --from 2026-07-31 --to 2026-08-07 --infer-type batch",
+      "expected": "exit 0, table output with batch infer statistics"
+    },
+    {
+      "id": "TC-08",
+      "name": "Negative: missing required --from/--to",
+      "command": "python3 scripts/maas_rest_usage_stats.py",
+      "expected": "exit != 0, argparse error: --from and --to are required"
+    },
+    {
+      "id": "TC-09",
+      "name": "Negative: invalid date format",
+      "command": "python3 scripts/maas_rest_usage_stats.py --from 2026/07/31 --to 2026-08-07",
+      "expected": "exit != 0, date parsing error message"
+    }
+  ]
+}

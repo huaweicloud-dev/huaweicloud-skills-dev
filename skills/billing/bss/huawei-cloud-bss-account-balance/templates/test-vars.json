@@ -1,0 +1,46 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "Query current account balance (cash account)",
+      "command": "python3 scripts/bss_balance_query.py --balance-type BALANCE_TYPE_DEBIT --months 6 --limit 10",
+      "expected": "JSON output containing balance.account_balances with amount/currency, and change_records.total_count >= 0"
+    },
+    {
+      "id": "TC-02",
+      "name": "Query balance with explicit 6-month date range",
+      "command": "python3 scripts/bss_balance_query.py --balance-type BALANCE_TYPE_DEBIT --begin $(date -d '6 months ago' +%Y-%m-%d) --end $(date +%Y-%m-%d) --limit 10",
+      "expected": "JSON output with query_range begin/end covering the last 6 months"
+    },
+    {
+      "id": "TC-03",
+      "name": "Negative: --begin without --end must fail with readable error",
+      "command": "python3 scripts/bss_balance_query.py --begin 2026-01-01; test $? -eq 1",
+      "expected": "stderr contains '--begin and --end must be provided together', exit code 1"
+    },
+    {
+      "id": "TC-04",
+      "name": "Negative: --months abc must fail with argparse int error",
+      "command": "python3 scripts/bss_balance_query.py --months abc 2>/dev/null; test $? -eq 2",
+      "expected": "argparse 'invalid int value' error, exit code 2"
+    },
+    {
+      "id": "TC-05",
+      "name": "Negative: invalid balance-type must fail with readable error",
+      "command": "python3 scripts/bss_balance_query.py --balance-type FOOBAR; test $? -eq 1",
+      "expected": "stderr contains 'Invalid --balance-type', exit code 1"
+    },
+    {
+      "id": "TC-06",
+      "name": "Negative: limit > 100 must fail with readable error",
+      "command": "python3 scripts/bss_balance_query.py --limit 500; test $? -eq 1",
+      "expected": "stderr contains '--limit must be between 1 and 100', exit code 1"
+    },
+    {
+      "id": "TC-07",
+      "name": "Negative: reversed date range must fail with readable error",
+      "command": "python3 scripts/bss_balance_query.py --begin 2026-08-10 --end 2026-01-01; test $? -eq 1",
+      "expected": "stderr contains 'must be earlier than or equal to --end', exit code 1"
+    }
+  ]
+}

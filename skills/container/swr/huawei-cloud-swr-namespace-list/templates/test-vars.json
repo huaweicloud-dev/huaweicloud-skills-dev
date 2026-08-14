@@ -1,0 +1,24 @@
+{
+  "region": "cn-north-4",
+  "namespace": "",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List All SWR Namespaces",
+      "command": "hcloud SWR ListNamespaces --cli-region=cn-north-4",
+      "expected": "HTTP 200 with namespaces array (or empty array)"
+    },
+    {
+      "id": "TC-02",
+      "name": "List Namespaces With JSON Output",
+      "command": "hcloud SWR ListNamespaces --cli-region=cn-north-4 --cli-output=json",
+      "expected": "HTTP 200 with JSON output"
+    },
+    {
+      "id": "TC-03",
+      "name": "List Namespaces Filtered By Name",
+      "command": "hcloud SWR ListNamespaces --cli-region=cn-north-4 --namespace={namespace}",
+      "expected": "HTTP 200 with namespaces matching the specified name"
+    }
+  ]
+}

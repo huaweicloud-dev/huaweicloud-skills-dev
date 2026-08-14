@@ -1,0 +1,23 @@
+{
+  "region": "",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "Query Account Balance (text report)",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/query_account_balance.py",
+      "expected": "Balance report with currency, debt_amount and per-account balances"
+    },
+    {
+      "id": "TC-02",
+      "name": "Query Account Balance (JSON output)",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/query_account_balance.py --format json",
+      "expected": "Valid JSON with currency, debt_amount and accounts[]"
+    },
+    {
+      "id": "TC-03",
+      "name": "Missing AK/SK handled gracefully",
+      "command": "env -u HUAWEI_ACCESS_KEY -u HUAWEI_SECRET_KEY python3 scripts/query_account_balance.py",
+      "expected": "Exits 1 with C01 error code and clear message"
+    }
+  ]
+}

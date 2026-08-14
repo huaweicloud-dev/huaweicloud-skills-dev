@@ -1,0 +1,29 @@
+{
+  "region": "cn-north-4",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List All CSS Clusters",
+      "command": "hcloud CSS ListClustersDetails --cli-region=cn-north-4 --limit=100",
+      "expected": "HTTP 200 with totalSize and clusters array (or empty array)"
+    },
+    {
+      "id": "TC-02",
+      "name": "List Only Elasticsearch Clusters",
+      "command": "hcloud CSS ListClustersDetails --cli-region=cn-north-4 --datastoreType=elasticsearch --limit=100",
+      "expected": "HTTP 200 with only elasticsearch clusters"
+    },
+    {
+      "id": "TC-03",
+      "name": "List Clusters With Pagination",
+      "command": "hcloud CSS ListClustersDetails --cli-region=cn-north-4 --limit=10 --offset=1",
+      "expected": "HTTP 200 honoring limit/offset"
+    },
+    {
+      "id": "TC-04",
+      "name": "List Clusters With JSON Output",
+      "command": "hcloud CSS ListClustersDetails --cli-region=cn-north-4 --limit=100 --cli-output=json",
+      "expected": "HTTP 200 with JSON output"
+    }
+  ]
+}

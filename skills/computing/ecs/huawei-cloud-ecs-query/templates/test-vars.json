@@ -1,0 +1,17 @@
+{
+  "test_cases": [
+    {"id": "TC-01", "name": "List ECS Servers Details", "command": "skill://.venv/bin/python3 skill://scripts/ecs/list_servers_details.py --region=cn-north-4 --limit=1", "expected": "JSON with total and items fields"},
+    {"id": "TC-02", "name": "List Cloud Servers", "command": "skill://.venv/bin/python3 skill://scripts/ecs/list_cloud_servers.py --region=cn-north-4 --limit=1", "expected": "JSON with total and items fields"},
+    {"id": "TC-03", "name": "List ECS Flavors", "command": "skill://.venv/bin/python3 skill://scripts/ecs/list_flavors.py --region=cn-north-4", "expected": "JSON with flavor list including vcpu and ram"},
+    {"id": "TC-04", "name": "List Flavor Sell Policies", "command": "skill://.venv/bin/python3 skill://scripts/ecs/list_flavor_sell_policies.py --region=cn-north-4", "expected": "JSON with sell policy list"},
+    {"id": "TC-05", "name": "List Server Groups", "command": "skill://.venv/bin/python3 skill://scripts/ecs/list_server_groups.py --region=cn-north-4", "expected": "JSON with server group list"},
+    {"id": "TC-06", "name": "List Availability Zones", "command": "skill://.venv/bin/python3 skill://scripts/ecs/list_server_az_info.py --region=cn-north-4", "expected": "JSON with AZ list"},
+    {"id": "TC-07", "name": "List Project Tags", "command": "skill://.venv/bin/python3 skill://scripts/ecs/list_server_tags.py --region=cn-north-4", "expected": "JSON with tag list"},
+    {"id": "TC-08", "name": "List SSH Keypairs", "command": "skill://.venv/bin/python3 skill://scripts/ecs/nova_list_keypairs.py --region=cn-north-4", "expected": "JSON with keypair list"},
+    {"id": "TC-09", "name": "Show Server Limits", "command": "skill://.venv/bin/python3 skill://scripts/ecs/show_server_limits.py --region=cn-north-4", "expected": "JSON with quota information"},
+    {"id": "TC-10", "name": "List Recycle Bin Servers", "command": "skill://.venv/bin/python3 skill://scripts/ecs/list_recycle_bin_servers.py --region=cn-north-4", "expected": "JSON with recycle bin server list"},
+    {"id": "TC-11", "name": "List Scheduled Events", "command": "skill://.venv/bin/python3 skill://scripts/ecs/list_scheduled_events.py --region=cn-north-4", "expected": "JSON with scheduled event list"},
+    {"id": "TC-12", "name": "List Launch Templates", "command": "skill://.venv/bin/python3 skill://scripts/ecs/list_templates.py --region=cn-north-4", "expected": "JSON with template list"},
+    {"id": "TC-13", "name": "Show Recycle Bin Config", "command": "skill://.venv/bin/python3 skill://scripts/ecs/show_recycle_bin.py --region=cn-north-4", "expected": "JSON with recycle bin configuration"}
+  ]
+}

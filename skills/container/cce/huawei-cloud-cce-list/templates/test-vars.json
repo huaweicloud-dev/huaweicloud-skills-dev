@@ -1,0 +1,41 @@
+{
+  "region": "cn-north-4",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List All CCE Clusters",
+      "command": "hcloud CCE ListClusters --cli-region={region} --cli-output=json",
+      "expected": "HTTP 200 with cluster list (names, ids, status, version)"
+    },
+    {
+      "id": "TC-02",
+      "name": "Extract Cluster Names Only",
+      "command": "hcloud CCE ListClusters --cli-region={region} --cli-output=json | jq -r '.items[].metadata.name'",
+      "expected": "One cluster name per line"
+    },
+    {
+      "id": "TC-03",
+      "name": "List CCE Clusters Filtered By Status",
+      "command": "hcloud CCE ListClusters --cli-region={region} --status=Available --cli-output=json",
+      "expected": "HTTP 200 with cluster list filtered by status"
+    },
+    {
+      "id": "TC-04",
+      "name": "List CCE Clusters Filtered By Type",
+      "command": "hcloud CCE ListClusters --cli-region={region} --type=VirtualMachine --cli-output=json",
+      "expected": "HTTP 200 with VirtualMachine clusters only"
+    },
+    {
+      "id": "TC-05",
+      "name": "List CCE Clusters With Detail",
+      "command": "hcloud CCE ListClusters --cli-region={region} --detail=true --cli-output=json",
+      "expected": "HTTP 200 with node/addon detail in annotations"
+    },
+    {
+      "id": "TC-06",
+      "name": "SDK Fallback List Clusters",
+      "command": "python3 -c \"import os; from huaweicloudsdkcore.auth.credentials import BasicCredentials; from huaweicloudsdkcce.v3.region.cce_region import CceRegion; from huaweicloudsdkcce.v3 import CceClient, ListClustersRequest; c=CceClient.new_builder().with_credentials(BasicCredentials(os.getenv('HUAWEICLOUD_SDK_AK'),os.getenv('HUAWEICLOUD_SDK_SK'))).with_region(CceRegion.value_of('cn-north-4')).build(); r=c.list_clusters(ListClustersRequest()); print('SDK OK, clusters:', [i.metadata.name for i in (r.items or [])])\"",
+      "expected": "SDK returns the same cluster list"
+    }
+  ]
+}

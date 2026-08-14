@@ -1,0 +1,66 @@
+{
+  "cycle": "2026-07",
+  "limit": 5,
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "Query Bill Fee Records (text)",
+      "command": "python3 scripts/query_bills.py --action fee-records --bill-cycle {cycle} --limit {limit}",
+      "expected": "BSS fee records for the billing cycle with total_count, currency and records[]"
+    },
+    {
+      "id": "TC-02",
+      "name": "Query Bill Fee Records (JSON)",
+      "command": "python3 scripts/query_bills.py --action fee-records --bill-cycle {cycle} --limit {limit} --format json",
+      "expected": "Valid JSON with action=fee-records, total_count, currency and records[]"
+    },
+    {
+      "id": "TC-03",
+      "name": "Query Resource Fee Records (流水账单)",
+      "command": "python3 scripts/query_bills.py --action res-fee-records --cycle {cycle} --limit {limit}",
+      "expected": "BSS resource fee records with total_count, currency and records[]"
+    },
+    {
+      "id": "TC-04",
+      "name": "Query Monthly Cost Breakdown",
+      "command": "python3 scripts/query_bills.py --action breakdown --shared-month {cycle} --limit {limit}",
+      "expected": "Monthly cost breakdown details with total_count and currency"
+    },
+    {
+      "id": "TC-05",
+      "name": "Invalid cycle format rejected",
+      "command": "python3 scripts/query_bills.py --action fee-records --bill-cycle 2026/07",
+      "expected": "Exits 1 with U02 (invalid format)"
+    },
+    {
+      "id": "TC-06",
+      "name": "Missing AK/SK handled gracefully",
+      "command": "env -u HUAWEI_ACCESS_KEY -u HUAWEI_SECRET_KEY python3 scripts/query_bills.py --action fee-records --bill-cycle {cycle}",
+      "expected": "Exits 1 with C01 (missing credentials)"
+    },
+    {
+      "id": "TC-07",
+      "name": "Cross-month date range rejected",
+      "command": "python3 scripts/query_bills.py --action fee-records --bill-cycle {cycle} --bill-date-begin 2026-06-20 --bill-date-end 2026-07-10",
+      "expected": "Exits 1 with U02 (date outside billing cycle)"
+    },
+    {
+      "id": "TC-08",
+      "name": "limit out of range rejected",
+      "command": "python3 scripts/query_bills.py --action fee-records --bill-cycle {cycle} --limit 0",
+      "expected": "Exits 1 with U02 (limit must be 1-100)"
+    },
+    {
+      "id": "TC-09",
+      "name": "Action/param mismatch rejected (shared-month)",
+      "command": "python3 scripts/query_bills.py --action fee-records --shared-month {cycle}",
+      "expected": "Exits 1 with U02 (shared-month only valid with breakdown)"
+    },
+    {
+      "id": "TC-10",
+      "name": "Action/param mismatch rejected (bill-date with breakdown)",
+      "command": "python3 scripts/query_bills.py --action breakdown --shared-month {cycle} --bill-date-begin 2026-07-01",
+      "expected": "Exits 1 with U02 (bill-date not supported by breakdown)"
+    }
+  ]
+}

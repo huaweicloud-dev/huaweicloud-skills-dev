@@ -1,0 +1,36 @@
+{
+  "region": "cn-north-4",
+  "instance_id": "{instance_id}",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List All DCS Instances",
+      "command": "hcloud DCS ListInstances --cli-region=cn-north-4 --limit=100",
+      "expected": "HTTP 200 with instance list (names, IDs, status)"
+    },
+    {
+      "id": "TC-02",
+      "name": "Extract DCS Instance Names Only",
+      "command": "hcloud DCS ListInstances --cli-region=cn-north-4 --limit=100 | jq -r '.instances[].name'",
+      "expected": "Instance name per line"
+    },
+    {
+      "id": "TC-03",
+      "name": "List DCS Instances Filtered By Name",
+      "command": "hcloud DCS ListInstances --cli-region=cn-north-4 --name=dcs-eval-client",
+      "expected": "HTTP 200 with instances whose name contains dcs-eval-client"
+    },
+    {
+      "id": "TC-04",
+      "name": "List DCS Instances Filtered By Status",
+      "command": "hcloud DCS ListInstances --cli-region=cn-north-4 --status=RUNNING --limit=100",
+      "expected": "HTTP 200 with RUNNING instances"
+    },
+    {
+      "id": "TC-05",
+      "name": "Show DCS Instance Detail (requires instance_id)",
+      "command": "hcloud DCS ShowInstance --cli-region=cn-north-4 --instance_id={instance_id}",
+      "expected": "HTTP 200 with instance details"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "region": "cn-north-4",
+  "instance_id": "",
+  "_note": "instance_id is intentionally empty by default: the test script validates any configured ID against ListInstances and falls back to auto-discovering the first ACTIVE instance in the region; if none exists, instance-scoped cases (TC-07..TC-13) are SKIPPED instead of failing. Set RDS_INSTANCE_ID or edit this field to pin a specific instance.",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List RDS Instances (inventory & status)",
+      "command": "hcloud RDS ListInstances --cli-region={region} --cli-output=json",
+      "expected": "HTTP 200 with instance list (name, id, status, datastore, volume)"
+    },
+    {
+      "id": "TC-02",
+      "name": "List Instances - MySQL engine filter",
+      "command": "hcloud RDS ListInstances --cli-region={region} --datastore_type=MySQL --cli-output=json",
+      "expected": "HTTP 200 with MySQL instances only"
+    },
+    {
+      "id": "TC-03",
+      "name": "Compact Instance Status Table",
+      "command": "hcloud RDS ListInstances --cli-region={region} --cli-output=json | python3 -c \"import json,sys; d=json.load(sys.stdin); [print(i.get('name'), i.get('id'), i.get('status'), (i.get('datastore') or {}).get('type'), (i.get('volume') or {}).get('size')) for i in d.get('instances',[])]\"",
+      "expected": "One line per instance with name/id/status/engine/volume"
+    },
+    {
+      "id": "TC-04",
+      "name": "List Parameter Templates",
+      "command": "hcloud RDS ListConfigurations --cli-region={region} --cli-output=json",
+      "expected": "HTTP 200 with configurations list"
+    },
+    {
+      "id": "TC-05",
+      "name": "Intelligent Diagnosis Summary (mysql)",
+      "command": "hcloud RDS ListInstanceDiagnosis --cli-region={region} --engine=mysql --cli-output=json",
+      "expected": "HTTP 200 with diagnosis_info counts"
+    },
+    {
+      "id": "TC-06",
+      "name": "Diagnosis Detail - high_pressure (mysql)",
+      "command": "hcloud RDS ListInstancesInfoDiagnosis --cli-region={region} --engine=mysql --diagnosis=high_pressure --cli-output=json",
+      "expected": "HTTP 200 with diagnosis result"
+    },
+    {
+      "id": "TC-07",
+      "name": "Instance Detail (ListInstances --id)",
+      "command": "hcloud RDS ListInstances --cli-region={region} --id={instance_id} --cli-output=json",
+      "expected": "HTTP 200 with instance detail (status, datastore, volume, nodes)"
+    },
+    {
+      "id": "TC-08",
+      "name": "Replication / HA Status",
+      "command": "hcloud RDS ShowReplicationStatus --cli-region={region} --instance_id={instance_id} --cli-output=json",
+      "expected": "HTTP 200 with replication_status"
+    },
+    {
+      "id": "TC-09",
+      "name": "Storage Used Space",
+      "command": "hcloud RDS ShowStorageUsedSpace --cli-region={region} --instance_id={instance_id} --cli-output=json",
+      "expected": "HTTP 200 with used GB"
+    },
+    {
+      "id": "TC-10",
+      "name": "Slow Logs (last 24h)",
+      "command": "hcloud RDS ListSlowLogs --cli-region={region} --instance_id={instance_id} --start_date={start_ts} --end_date={end_ts} --cli-output=json",
+      "expected": "HTTP 200 with slow_log_list (empty list is valid)"
+    },
+    {
+      "id": "TC-11",
+      "name": "Error Logs (last 24h)",
+      "command": "hcloud RDS ListErrorLogsNew --cli-region={region} --instance_id={instance_id} --start_date={start_ts} --end_date={end_ts} --cli-output=json",
+      "expected": "HTTP 200 with error_log_list (empty list is valid)"
+    },
+    {
+      "id": "TC-12",
+      "name": "Instance Parameter Inspection",
+      "command": "hcloud RDS ShowInstanceConfiguration --cli-region={region} --instance_id={instance_id} --cli-output=json",
+      "expected": "HTTP 200 with configuration_parameters"
+    },
+    {
+      "id": "TC-13",
+      "name": "Backup List",
+      "command": "hcloud RDS ListBackups --cli-region={region} --instance_id={instance_id} --cli-output=json",
+      "expected": "HTTP 200 with backups list"
+    }
+  ]
+}

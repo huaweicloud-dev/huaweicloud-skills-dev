@@ -1,0 +1,41 @@
+{
+  "region": "",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "Query Current Account Balance (text)",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/query_balance_history.py --action balance",
+      "expected": "Balance report with currency, debt_amount and per-account balances"
+    },
+    {
+      "id": "TC-02",
+      "name": "Query Current Account Balance (JSON)",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/query_balance_history.py --action balance --format json",
+      "expected": "Valid JSON with action=balance, currency, debt_amount and accounts[]"
+    },
+    {
+      "id": "TC-03",
+      "name": "Query Balance Change Records in Time Range",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/query_balance_history.py --action changes --begin 2026-07-01 --end 2026-07-31 --limit 5",
+      "expected": "Balance change records with trade_time, change_amount and balance_after_change"
+    },
+    {
+      "id": "TC-04",
+      "name": "Query Monthly Bill Summary",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/query_balance_history.py --action monthly-sum --bill-cycle 2026-07 --limit 5",
+      "expected": "Monthly bill summary with consume_amount, debt_amount and bill_sums[]"
+    },
+    {
+      "id": "TC-05",
+      "name": "Invalid bill_cycle format rejected",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/query_balance_history.py --action monthly-sum --bill-cycle 2026/07",
+      "expected": "Exits 1 with U02 error code and clear message"
+    },
+    {
+      "id": "TC-06",
+      "name": "Missing AK/SK handled gracefully",
+      "command": "env -u HUAWEI_ACCESS_KEY -u HUAWEI_SECRET_KEY -u HUAWEICLOUD_SDK_AK -u HUAWEICLOUD_SDK_SK python3 scripts/query_balance_history.py --action balance",
+      "expected": "Exits 1 with C01 error code and clear message"
+    }
+  ]
+}

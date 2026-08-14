@@ -1,0 +1,9 @@
+skill-gate-report-20260810111556
+====================
+huawei-cloud-billing-bill-query — Phase 6 security audit
+1. skillcheck: NOT AVAILABLE (package not on PyPI) — reported as missing dependency
+2. markdownlint-cli2: 0 issues in 6 files (with .markdownlint.json)
+3. hwcloud-spec (validate-skill.sh): 31 PASS / 0 FAIL / 2 WARN (WARNs same profile as merged sibling skill)
+4. gitleaks: no leaks found
+5. pip-audit: skill deps (huaweicloudsdkbss 3.1.209, huaweicloudsdkcore 3.1.209) 0 vulns; env-level packages have unrelated vulns
+VERDICT: PASS

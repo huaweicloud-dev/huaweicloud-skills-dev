@@ -1,0 +1,36 @@
+========================================================================
+  Skill Gate Audit Report
+  Scan target: /tmp/multica-task-2848083811/workclone/skills/storage/gaussdb/huawei-cloud-gaussdb-count
+  Skills scanned: 1
+  Scan level: standard
+  Generated: 2026-08-05 01:29:05 UTC
+========================================================================
+
+── 1. Scanned Skills ──
+
+  ✔ huawei-cloud-gaussdb-count
+
+── 2. Issue Summary ──
+
+  WARNING    2  PE2 x2 (skillspector)
+
+── 3. Issue Details ──
+
+  [WARNING]  — Privilege Escalation
+    references/cli-installation-guide.md L12  PE2
+    Snippet: sudo mv hcloud /usr/local/bin/
+    Sudo/Root Execution
+
+  [WARNING]  — Privilege Escalation
+    references/cli-installation-guide.md L18  PE2
+    Snippet: sudo mv hcloud /usr/local/bin/
+    Sudo/Root Execution
+
+── 4. Fix Strategies ──
+
+  [WARNING] Privilege Escalation
+    Strategy: Review the issue and apply best practices for this category
+
+========================================================================
+  Gate Verdict: PASS  |  gitleaks OK  skillspector OK
+========================================================================

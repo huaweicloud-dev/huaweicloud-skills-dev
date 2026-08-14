@@ -1,0 +1,15 @@
+$ python3 scripts/count_gaussdb_instances.py --region cn-north-4   (HUAWEI_ACCESS_KEY=WRONG_AK_TEST)
+ERROR: GaussDB for openGauss query failed: SdkException - Failed to get project id of region 'cn-north-4', ClientRequestException - {status_code:401,request_id:7a5b2b48da07bffb364a1d823d86ba25,error_code:APIGW.0301,error_msg:Incorrect IAM authentication information: Unauthorized,...}. Check the AK/SK credentials and network connectivity.
+exit code: 1
+（无 traceback）
+
+$ python3 scripts/count_gaussdb_instances.py --region invalid-region-xx
+ERROR: invalid region 'invalid-region-xx': region not found. Use a valid region such as cn-north-4.
+exit code: 1
+（无 traceback）
+
+$ python3 scripts/count_gaussdb_instances.py --region cn-north-4   (正确凭证)
+GaussDB for openGauss count: 0
+GaussDB (MySQL) count: 0
+Total GaussDB instances: 0
+exit code: 0
