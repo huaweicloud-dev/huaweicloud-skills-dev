@@ -148,6 +148,7 @@ Usage: python scripts/elb/list_listener_tags.py -h
 
 Purpose: Query the ELB API version list, including ID, status.
 Usage: python scripts/elb/list_api_versions.py -h
+Note: Public endpoint — no AK/SK or --project_id required. If the region requires authentication, the script falls back to the SDK automatically.
 
 ---
 

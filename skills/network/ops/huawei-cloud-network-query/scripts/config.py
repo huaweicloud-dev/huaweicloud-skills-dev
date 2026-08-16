@@ -64,3 +64,55 @@ def build_http_config():
         http_config.proxy_password = parsed.password or ""
 
     return http_config
+
+
+def resolve_project_id(region, project_id=None):
+    """解析项目 ID：优先使用传入参数，其次环境变量 HW_PROJECT_ID，最后通过 IAM API 自动获取。
+
+    :param region: 区域名称，如 cn-north-4
+    :param project_id: 可选的项目 ID，若提供则直接返回
+    :return: 项目 ID 字符串
+    """
+    if project_id:
+        return project_id
+
+    env_pid = os.getenv("HW_PROJECT_ID", "")
+    if env_pid:
+        return env_pid
+
+    ak = os.getenv("HW_ACCESS_KEY", "")
+    sk = os.getenv("HW_SECRET_KEY", "")
+    security_token = os.getenv("HW_SECURITY_TOKEN", "")
+
+    if not ak or not sk:
+        print("未配置 AK/SK，请设置环境变量 HW_ACCESS_KEY 和 HW_SECRET_KEY")
+        exit(-1)
+
+    try:
+        from huaweicloudsdkiam.v3 import IamClient
+        from huaweicloudsdkiam.v3.model import KeystoneListProjectsRequest
+        from huaweicloudsdkiam.v3.region.iam_region import IamRegion
+
+        http_config = build_http_config()
+        credentials = BasicCredentials(ak, sk) if not security_token \
+            else BasicCredentials(ak, sk).with_security_token(security_token)
+        client = IamClient.new_builder() \
+            .with_http_config(http_config) \
+            .with_credentials(credentials) \
+            .with_region(IamRegion.value_of(region)) \
+            .build()
+        request = KeystoneListProjectsRequest()
+        request.name = region
+        response = client.keystone_list_projects(request)
+        projects = response.projects
+        if not projects:
+            print(f"未找到可访问的项目 (区域: {region})")
+            exit(0)
+        for project in projects:
+            if getattr(project, 'name', '') == region:
+                return project.id
+        return projects[0].id
+    except Exception as e:
+        print(f"自动获取项目 ID 失败: {e}")
+        print("请通过 --project_id 参数指定，或设置 HW_PROJECT_ID 环境变量")
+        exit(-1)

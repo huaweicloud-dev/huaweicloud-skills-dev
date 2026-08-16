@@ -348,6 +348,7 @@ Usage: python scripts/dns/list_instances.py -h
 
 Purpose: Query the DNS API version information list, including version ID, status.
 Usage: python scripts/dns/list_api_versions.py -h
+Note: Public endpoint — no AK/SK or --project_id required. If the region requires authentication, the script falls back to the SDK automatically.
 
 ---
 

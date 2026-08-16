@@ -1,79 +1,103 @@
 import argparse
-import sys
+import json
 import os
+import ssl
+import sys
+import urllib.request
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from config import load_credentials, build_http_config
-from huaweicloudsdkcore.auth.credentials import BasicCredentials
-from huaweicloudsdkelb.v3 import ElbClient
-from huaweicloudsdkelb.v3.model import ListApiVersionsRequest
-from huaweicloudsdkelb.v3.region.elb_region import ElbRegion
+from skill_quality_sdk import QualityError, quality_context  # noqa: E402
 
-AK, SK, Region, SecurityToken = load_credentials()
+# ELB API 版本查询是公开接口（GET /versions），无需凭据与 project_id；
+# 先尝试匿名访问，若失败则回退到 SDK 认证调用（仍无需 project_id）。
+DEFAULT_REGION = "cn-north-4"
 
-PAGE_SIZE = 50   # 每页展示条数
-FETCH_SIZE = PAGE_SIZE + 1  # 多查1条用于判断是否还有更多
 
-parser = argparse.ArgumentParser(description="查询 ELB API 版本列表")
-parser.add_argument("--project_id", type=str, required=True, help="项目 ID，可通过 ../iam/get_project_id.py 获取")
-parser.add_argument("--region", type=str, help="区域，默认 cn-north-4")
-parser.add_argument("--marker", type=str, help="分页标记，从上次查询结果的 next_marker 获取")
-args = parser.parse_args()
+def parse_args():
+    parser = argparse.ArgumentParser(description="查询 ELB API 版本列表（公开接口，无需 project_id）")
+    parser.add_argument("--region", type=str, default=os.getenv("HW_REGION_NAME", DEFAULT_REGION),
+                        help="区域，默认 cn-north-4")
+    return parser.parse_args()
 
-if args.region is not None:
-    Region = args.region
 
-try:
-    http_config = build_http_config()
-    client = ElbClient.new_builder().with_http_config(http_config).with_credentials(
-        BasicCredentials(AK, SK, args.project_id) if not SecurityToken else BasicCredentials(AK, SK, args.project_id).with_security_token(SecurityToken)).with_region(ElbRegion.value_of(Region)).build()
-    if not client:
-        print(f"无法获取 ELB 客户端")
-        exit(-1)
-
-    # API 不支持分页（无 marker/limit/offset），一次返回所有数据，本地 marker 翻页
-    request = ListApiVersionsRequest()
-    response = client.list_api_versions(request)
-    items = response.versions
+def render(items):
     if not items:
-        print(f"没有找到 API 版本 (区域: {Region})")
-        exit(0)
-
-    # 本地 marker 翻页：找到 marker 对应的位置，从该位置之后开始展示
-    start_idx = 0
-    if args.marker:
-        for i, item in enumerate(items):
-            if str(getattr(item, 'id', '')) == args.marker:
-                start_idx = i + 1
-                break
-
-    remaining_items = items[start_idx:]
-    if not remaining_items:
-        print(f"没有更多数据")
-        exit(0)
-
-    # 判断是否还有更多数据
-    has_more = len(remaining_items) > PAGE_SIZE
-    next_marker = None
-    if has_more:
-        next_marker = str(getattr(remaining_items[PAGE_SIZE - 1], 'id', ''))
-    display_items = remaining_items[:PAGE_SIZE]
-
-    output = f"id\tstatus\n"
-    for item in display_items:
-        id = getattr(item, 'id', '')
-        status = getattr(item, 'status', '')
-        output += f"{id}\t{status}\n"
-
-    if has_more:
-        output += f"\n当前返回 {len(display_items)} 条，还有更多数据"
-        if next_marker:
-            output += f"\n可使用 --marker={next_marker} 继续查询下一页，或使用过滤参数缩小查询范围"
-    else:
-        output += f"\n共 {len(display_items)} 条"
-
+        print("没有找到API版本信息")
+        return
+    header = "id\tstatus"
+    output = header + "\n"
+    for v in items:
+        vid = v.get("id", "") if isinstance(v, dict) else getattr(v, "id", "")
+        status = v.get("status", "") if isinstance(v, dict) else getattr(v, "status", "")
+        output += f"{vid}\t{status}\n"
     print(output)
-except Exception as e:
-    print(f"elb.list_api_versions 查询失败: {e}")
-    exit(1)
+
+
+def fetch_anonymous(region):
+    """匿名访问公开版本端点，返回版本条目列表；失败抛异常"""
+    ctx = ssl._create_unverified_context()
+    url = f"https://elb.{region}.myhuaweicloud.com/versions"
+    req = urllib.request.Request(url, headers={"Accept": "application/json"})
+    with urllib.request.urlopen(req, timeout=30, context=ctx) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    versions = data.get("versions", []) if isinstance(data, dict) else []
+    if isinstance(versions, dict):
+        return versions.get("values", [])
+    return versions
+
+
+def query_versions(region):
+    """查询 API 版本：先匿名访问公开端点，失败时回退到 SDK 认证调用（无需 project_id）"""
+    try:
+        return fetch_anonymous(region)
+    except Exception:
+        ak = os.getenv("HW_ACCESS_KEY", "")
+        sk = os.getenv("HW_SECRET_KEY", "")
+        if not ak or not sk:
+            print("ELB API 版本接口访问失败，请检查网络；如需认证调用请设置环境变量 HW_ACCESS_KEY 和 HW_SECRET_KEY（版本查询无需 project_id）")
+            raise SystemExit(1)
+        from config import build_http_config
+        from huaweicloudsdkcore.auth.credentials import BasicCredentials
+        from huaweicloudsdkelb.v3 import ElbClient
+        from huaweicloudsdkelb.v3.model import ListApiVersionsRequest
+        from huaweicloudsdkelb.v3.region.elb_region import ElbRegion
+
+        security_token = os.getenv("HW_SECURITY_TOKEN", "")
+        http_config = build_http_config()
+        credentials = BasicCredentials(ak, sk) if not security_token \
+            else BasicCredentials(ak, sk).with_security_token(security_token)
+        client = ElbClient.new_builder() \
+            .with_http_config(http_config) \
+            .with_credentials(credentials) \
+            .with_region(ElbRegion.value_of(region)) \
+            .build()
+        response = client.list_api_versions(ListApiVersionsRequest())
+        return getattr(response, 'versions', []) or []
+
+
+def main():
+    args = parse_args()
+    region = args.region
+    with quality_context(skill_name="huawei-cloud-network-query", skill_version="1.0.0", trigger_type="agent") as q:
+        q.input = {"region": region, "api": "elb.list_api_versions"}
+        items = query_versions(region)
+        if not items:
+            print("没有找到API版本信息")
+            q.output = {"version_count": 0}
+            return
+        render(items)
+        q.output = {"version_count": len(items)}
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except QualityError as qe:
+        sys.stderr.write(str(qe) + "\n")
+        sys.exit(1)
+    except SystemExit:
+        raise
+    except Exception as exc:
+        sys.stderr.write(f"执行失败: {exc}\n")
+        sys.exit(1)

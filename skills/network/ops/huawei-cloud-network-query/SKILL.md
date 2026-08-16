@@ -1,6 +1,6 @@
 ---
 name: huawei-cloud-network-query
-description: "Queries Huawei Cloud network resources (VPC/EIP/ELB/NAT/VPN/DNS). Covers VPCs, subnets, security groups, firewalls, route tables, flow logs, EIPs, bandwidths, load balancers, listeners, pools, health monitors, NAT gateways, SNAT/DNAT rules, VPN gateways, VPN connections, DNS zones, record sets, PTR records, and endpoints. No write operations. Use this skill when the user needs to query network topology, security group rules, load balancer config, NAT rules, VPN status, or DNS resolution info. Triggers: VPC, 子网, 安全组, EIP, 弹性公网IP, ELB, 负载均衡, NAT网关, VPN, DNS, 域名解析, 路由表, 防火墙, 带宽, network, subnet, security group."
+description: "Queries Huawei Cloud network resources (VPC/EIP/ELB/NAT/VPN/DNS). Covers VPCs, subnets, security groups, firewalls, route tables, flow logs, EIPs, bandwidths, load balancers, listeners, pools, health monitors, NAT gateways, SNAT/DNAT rules, VPN gateways, VPN connections, DNS zones, record sets, PTR records, and endpoints. No write operations. Use this skill when the user needs to query network topology, security group rules, load balancer config, NAT rules, VPN status, or DNS resolution info. Triggers include: VPC, 子网, 安全组, EIP, 弹性公网IP, ELB, 负载均衡, NAT网关, VPN, DNS, 域名解析, 路由表, 防火墙, 带宽, network, subnet, security group."
 ---
 # Huawei Cloud Resource Query
 
@@ -90,7 +90,7 @@ The script will check in order: Python >= 3.6 → Install dependencies → Valid
 
 ---
 
-## Execution Flow
+## Workflow
 
 **When this skill is invoked, you must follow these steps. Do not wait for the user to prompt again:**
 
@@ -150,6 +150,33 @@ For script-specific parameters, see `references/<service>/guide.md`.
 
 ---
 
+## Core Commands
+
+All queries are executed via the local Python scripts under `scripts/<service>/` (SDK-based; no CLI tool required). Before each query, run `-h` to confirm parameters, then execute:
+
+```bash
+# List resources (VPC example)
+skill action=exec: skill://.venv/bin/python3 skill://scripts/vpc/list_vpcs.py --region cn-north-4
+
+# Show a single resource (VPC example)
+skill action=exec: skill://.venv/bin/python3 skill://scripts/vpc/show_vpc.py --region cn-north-4 --vpc_id {vpc_id}
+
+# Public API version query (no credentials / project_id needed)
+skill action=exec: skill://.venv/bin/python3 skill://scripts/elb/list_api_versions.py --region cn-north-4
+```
+
+Common flags across all scripts:
+
+| Flag | Description |
+|------|-------------|
+| `--region` | Region name, default from `HW_REGION_NAME` or `cn-north-4` |
+| `--project_id` | Optional; when omitted it is automatically obtained via the IAM API (or `HW_PROJECT_ID`) |
+| `-h` / `--help` | Show all parameters of the script |
+
+Per-service script lists and parameters: see `references/<service>/guide.md`.
+
+---
+
 ## Output Format
 
 Query results are output in JSON format and include the following common fields:
@@ -179,9 +206,12 @@ Query results are output in JSON format and include the following common fields:
 
 ---
 
-## Reference Documentation
+## Reference Documents
 
 - Usage guides for each service query script: `references/<service>/guide.md`
+- IAM policies (least privilege): `references/iam-policies.md`
+- Verification method: `references/verification-method.md`
+- Acceptance criteria: `references/acceptance-criteria.md`
 
 ---
 
@@ -193,3 +223,4 @@ Query results are output in JSON format and include the following common fields:
 4. Do not guess script names; execute strictly according to the names in guide.md
 5. You must run the environment check script before querying
 6. When using temporary AK/SK, you need to set HW_SECURITY_TOKEN
+7. Execution-quality reporting: scripts report trace_id / status / error code / cost to the skillsopr operations console via the vendored `scripts/skill_quality_sdk.py`. Reporting is non-blocking and fails silently; set `SKILL_QUALITY_DISABLE=1` to disable it locally. It never affects query results.
