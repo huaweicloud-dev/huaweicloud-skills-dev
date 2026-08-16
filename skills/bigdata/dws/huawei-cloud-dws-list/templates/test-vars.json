@@ -1,0 +1,47 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "ListClusters help shows valid params",
+      "command": "hcloud DWS ListClusters --cli-region=cn-north-4 --help",
+      "expected": "exit code 0, help text with Params section"
+    },
+    {
+      "id": "TC-02",
+      "name": "ListClusters live query returns valid JSON",
+      "command": "hcloud DWS ListClusters --cli-region=cn-north-4",
+      "expected": "valid JSON with clusters array and count field, exit code 0"
+    },
+    {
+      "id": "TC-03",
+      "name": "Cluster name extraction via jq",
+      "command": "hcloud DWS ListClusters --cli-region=cn-north-4 | jq -r '.clusters[]?.name'",
+      "expected": "each cluster name on its own line (or empty output when no clusters)"
+    },
+    {
+      "id": "TC-04",
+      "name": "Wrapper script returns cluster names with quality SDK",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/list_dws_clusters.py --region cn-north-4",
+      "expected": "prints 'No DWS clusters found in region cn-north-4' or cluster names, exit 0"
+    },
+    {
+      "id": "TC-05",
+      "name": "Quality SDK imports successfully",
+      "command": "python3 -c \"import sys; sys.path.insert(0, 'scripts'); from skill_quality_sdk import quality_report, QualityError; print('QUALITY SDK OK')\"",
+      "expected": "prints QUALITY SDK OK"
+    },
+    {
+      "id": "TC-06",
+      "name": "Wrapper reports clear error for invalid region (exit 1, no misleading JSON error)",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/list_dws_clusters.py --region eu-west-99",
+      "expected_exit": 1,
+      "expected": "exit 1, stderr contains 'region 无效' or 'cli-region is not supported', not a bare JSON parse error"
+    },
+    {
+      "id": "TC-07",
+      "name": "Wrapper surfaces raw hcloud error output for invalid region",
+      "command": "bash -c 'SKILL_QUALITY_DISABLE=1 python3 scripts/list_dws_clusters.py --region eu-west-99 2>&1 | grep -q \"原始输出\"'",
+      "expected": "error message includes the raw hcloud output for diagnosis"
+    }
+  ]
+}
