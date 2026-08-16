@@ -1,0 +1,47 @@
+{
+  "region": "cn-north-4",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List All DDS Instances (CLI)",
+      "command": "hcloud DDS ListInstances --cli-region=cn-north-4 --limit=10 --cli-output=json",
+      "expected": "JSON object with instances array; each has id/name/status"
+    },
+    {
+      "id": "TC-02",
+      "name": "Extract DDS Instance Names Only (CLI)",
+      "command": "hcloud DDS ListInstances --cli-region=cn-north-4 --limit=10 --cli-query=\"instances[].name\"",
+      "expected": "List of DDS instance names"
+    },
+    {
+      "id": "TC-03",
+      "name": "List DDS Instances Filtered By Datastore Type (CLI)",
+      "command": "hcloud DDS ListInstances --cli-region=cn-north-4 --datastore_type=DDS-Community --limit=10 --cli-output=json",
+      "expected": "instances array with datastore.type=DDS-Community"
+    },
+    {
+      "id": "TC-04",
+      "name": "List DDS Instances Filtered By Mode (CLI)",
+      "command": "hcloud DDS ListInstances --cli-region=cn-north-4 --cli-mode=AKSK --mode=ReplicaSet --limit=10 --cli-output=json",
+      "expected": "instances array with mode=ReplicaSet"
+    },
+    {
+      "id": "TC-05",
+      "name": "List DDS Instances With Pagination (CLI)",
+      "command": "hcloud DDS ListInstances --cli-region=cn-north-4 --limit=5 --offset=0 --cli-output=json",
+      "expected": "instances array limited to 5"
+    },
+    {
+      "id": "TC-06",
+      "name": "Quality-Reporting Wrapper (names only, reporting disabled)",
+      "command": "SKILL_QUALITY_DISABLE=1 python3 scripts/list_dds_instances.py --region=cn-north-4 --names-only --limit 10",
+      "expected": "One DDS instance name per line"
+    },
+    {
+      "id": "TC-07",
+      "name": "SDK Fallback (names only)",
+      "command": "python3 scripts/list_dds_instances.py --region=cn-north-4 --names-only --executor sdk --limit 10",
+      "expected": "Same DDS instance names as CLI"
+    }
+  ]
+}
