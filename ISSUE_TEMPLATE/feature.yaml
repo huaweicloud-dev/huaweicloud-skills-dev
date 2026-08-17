@@ -1,0 +1,45 @@
+name: 华为云skill需求模板（请在创建前检查需求是否已被实现过！）
+description: 请描述你想要创建的需求的详细信息
+title: "[帮我创建一个skill] "
+assignees: "yours_username"
+
+body:
+  - type: input
+    id: target-service
+    attributes:
+      label: 你创建的需求涉及到哪个华为云服务【Which Huawei Cloud service? (ECS, VPC, OBS, RDS, BSS, etc.)】
+      description: 请尽可能详细地描述需求【Description your feature】
+      placeholder: 示例：涉及到华为云ECS
+    validations:
+      required: true
+  - type: input
+    id: target-do
+    attributes:
+      label: 该Skill主要为了解决哪些问题【 What should the Skill do? (Query, Diagnose, Deploy, Monitor, Manage)】
+      description: 请尽可能详细地描述你的需求，涉及到查询、诊断、编译、检测、管理【Description your feature Detail】
+      placeholder: 示例：查询ECS列表
+    validations:
+      required: true
+  - type: input
+    id: target-operation
+    attributes:
+      label: 你的Skill主要涉及到如下哪些操作【Which operations are involved? (List, Show, Create, Delete, Update)】
+      description: 请述说你的Skill涉及到的增、删、改、查操作【Description your operation】
+      placeholder: 示例：查询
+    validations:
+      required: true
+  - type: input
+    id: target-trigger
+    attributes:
+      label: 你希望在什么时机触发Agent对Skill的调用【When would an Agent invoke this? (Daily inspection, troubleshooting)】
+      description: 请填写您的触发时机，日常检测、问题处理【Description your feature】
+      placeholder: 示例：日常检测
+    validations:
+      required: false
+  - type: input
+    id: other
+    attributes:
+      label: 需求其他补充描述
+      placeholder: 请输入补充说明
+    validations:
+      required: false
