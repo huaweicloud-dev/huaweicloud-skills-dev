@@ -103,6 +103,7 @@ def _translate_sdk_error(exc):
 
 
 def _get_ak_sk():
+    # 依次从多个环境变量中读取 AK/SK，兼容不同命名约定（HUAWEI_* / HUAWEICLOUD_SDK_* / HW_*）
     ak = (
         os.environ.get("HUAWEI_ACCESS_KEY")
         or os.environ.get("HUAWEICLOUD_SDK_AK")
