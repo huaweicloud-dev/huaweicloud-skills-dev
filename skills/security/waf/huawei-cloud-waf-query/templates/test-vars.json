@@ -1,0 +1,58 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List attack events",
+      "command": "hcloud WAF ListEvent --cli-region=cn-north-4 --project_id={project_id} --from={from_ms} --to={to_ms} --pagesize=5",
+      "expected": "JSON with total and items fields"
+    },
+    {
+      "id": "TC-02",
+      "name": "List attack events filtered by attack type (SQLi)",
+      "command": "hcloud WAF ListEvent --cli-region=cn-north-4 --project_id={project_id} --from={from_ms} --to={to_ms} --attacks.1=sqli --pagesize=5",
+      "expected": "JSON with total and items fields"
+    },
+    {
+      "id": "TC-02b",
+      "name": "List attack events filtered by domain array form (regression: --domain BUG-001)",
+      "command": "hcloud WAF ListEvent --cli-region=cn-north-4 --project_id={project_id} --from={from_ms} --to={to_ms} --domains.1=test.example.com --pagesize=5",
+      "expected": "JSON with total and items fields (no USE_ERROR EOF)"
+    },
+    {
+      "id": "TC-03",
+      "name": "List access/protection logs",
+      "command": "hcloud WAF ListEventLog --cli-region=cn-north-4 --project_id={project_id} --page=1 --pagesize=5",
+      "expected": "JSON with total and items fields"
+    },
+    {
+      "id": "TC-04",
+      "name": "Attack statistics overview",
+      "command": "hcloud WAF ListStatistics --cli-region=cn-north-4 --project_id={project_id} --from={from_ms} --to={to_ms}",
+      "expected": "Array of {key, num} entries"
+    },
+    {
+      "id": "TC-05",
+      "name": "Threat overview (today)",
+      "command": "hcloud WAF ListThreats --cli-region=cn-north-4 --project_id={project_id} --from={from_ms} --to={to_ms} --recent=today",
+      "expected": "Threat summary JSON"
+    },
+    {
+      "id": "TC-06",
+      "name": "Top attack source IPs",
+      "command": "hcloud WAF ListTopIp --cli-region=cn-north-4 --project_id={project_id} --from={from_ms} --to={to_ms}",
+      "expected": "JSON with total and items fields"
+    },
+    {
+      "id": "TC-07",
+      "name": "Invalid recent value rejected",
+      "command": "hcloud WAF ListThreats --cli-region=cn-north-4 --project_id={project_id} --from={from_ms} --to={to_ms} --recent=0",
+      "expected": "USE_ERROR with valid values message"
+    },
+    {
+      "id": "TC-08",
+      "name": "ShowEvent with non-existent eventid (regression: BUG-002)",
+      "command": "hcloud WAF ShowEvent --cli-region=cn-north-4 --project_id={project_id} --eventid=non-existent-event-id",
+      "expected": "Silently returns {\"total\":0,\"items\":[]} (no error) — documented in Edge Cases"
+    }
+  ]
+}
