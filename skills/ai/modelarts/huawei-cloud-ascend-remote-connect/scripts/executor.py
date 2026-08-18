@@ -52,6 +52,13 @@ class CommandExecutor:
         if text == 'confirm' and self.pending_disk_merge:
             return self._execute_disk_merge(self.pending_disk_merge)
 
+        # Switch to - session switching
+        if text.startswith('Switch to ') or text.startswith('switch to '):
+            host = text.split('Switch to ')[-1].strip() if 'Switch to ' in text else text.split('switch to ')[-1].strip()
+            if self.session_manager.switch_by_host(host):
+                return f"Switched to {host}"
+            return f"❌ No active connection to {host}"
+
         # Connection Management
         if text == 'view connections':
             return self._list_connections()
