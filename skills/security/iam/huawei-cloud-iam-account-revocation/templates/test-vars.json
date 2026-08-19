@@ -1,0 +1,68 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "List IAM Users",
+      "command": "hcloud IAM ListUsersV5 --cli-region=cn-north-4 --limit=5",
+      "expected": "Non-empty user list or empty array (depending on account state)",
+      "type": "query",
+      "requires_confirmation": false
+    },
+    {
+      "id": "TC-02",
+      "name": "Detach Policy from User",
+      "command": "hcloud IAM DetachUserPolicyV5 --cli-region={region} --policy_id={policy_id} --user_id={user_id}",
+      "expected": "HTTP 204 No Content",
+      "type": "mutate",
+      "requires_confirmation": true
+    },
+    {
+      "id": "TC-03",
+      "name": "Remove User from Group",
+      "command": "hcloud IAM RemoveUserFromGroupV5 --cli-region={region} --group_id={group_id} --user_id={user_id}",
+      "expected": "HTTP 204 No Content",
+      "type": "mutate",
+      "requires_confirmation": true
+    },
+    {
+      "id": "TC-04",
+      "name": "Delete Login Profile",
+      "command": "hcloud IAM DeleteLoginProfileV5 --cli-region={region} --user_id={user_id}",
+      "expected": "HTTP 204 No Content",
+      "type": "mutate",
+      "requires_confirmation": true
+    },
+    {
+      "id": "TC-05",
+      "name": "Delete Access Key",
+      "command": "hcloud IAM DeleteAccessKeyV5 --cli-region={region} --access_key_id={ak_id} --user_id={user_id}",
+      "expected": "HTTP 204 No Content",
+      "type": "mutate",
+      "requires_confirmation": true
+    },
+    {
+      "id": "TC-06",
+      "name": "Delete Virtual MFA Device",
+      "command": "hcloud IAM DeleteVirtualMfaDeviceV5 --cli-region={region} --user_id={user_id} --serial_number={serial_number}",
+      "expected": "HTTP 204 No Content",
+      "type": "mutate",
+      "requires_confirmation": true
+    },
+    {
+      "id": "TC-07",
+      "name": "Delete Group",
+      "command": "hcloud IAM DeleteGroupV5 --cli-region={region} --group_id={group_id}",
+      "expected": "HTTP 204 No Content",
+      "type": "mutate",
+      "requires_confirmation": true
+    },
+    {
+      "id": "TC-08",
+      "name": "Delete IAM User",
+      "command": "hcloud IAM DeleteUserV5 --cli-region={region} --user_id={user_id}",
+      "expected": "HTTP 204 No Content",
+      "type": "mutate",
+      "requires_confirmation": true
+    }
+  ]
+}
