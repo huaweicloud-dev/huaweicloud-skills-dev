@@ -1,0 +1,22 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "Verify services_en.json exists",
+      "command": "test -f ~/.hcloud/metaRepo/services_en.json && echo 'EXISTS' || echo 'NOT_FOUND'",
+      "expected": "EXISTS"
+    },
+    {
+      "id": "TC-02",
+      "name": "Count services from cached metadata",
+      "command": "python3 -c \"import json, os; data=json.load(open(os.path.expanduser('~/.hcloud/metaRepo/services_en.json'))); items=data.get('items',[]); print(len(items))\"",
+      "expected": "regex:^[0-9]+$"
+    },
+    {
+      "id": "TC-03",
+      "name": "hcloud meta download command available",
+      "command": "hcloud meta --help 2>&1 | grep -q 'download' && echo 'AVAILABLE' || echo 'NOT_FOUND'",
+      "expected": "AVAILABLE"
+    }
+  ]
+}
