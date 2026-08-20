@@ -1,0 +1,34 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "name": "Help output",
+      "command": "python3 scripts/obs-list-excel.py --help",
+      "expected": "usage: obs-list-excel.py"
+    },
+    {
+      "id": "TC-02",
+      "name": "SDK import check",
+      "command": "python3 -c \"from huaweicloudsdkobs.v1.obs_client import ObsClient; from openpyxl import Workbook; print('OK')\"",
+      "expected": "OK"
+    },
+    {
+      "id": "TC-03",
+      "name": "Skill quality SDK integration",
+      "command": "python3 -c \"import sys; sys.path.insert(0, 'scripts/'); from skill_quality_sdk import quality_report, quality_context; print('OK')\"",
+      "expected": "OK"
+    },
+    {
+      "id": "TC-04",
+      "name": "Real API: List buckets with credentials",
+      "command": "python3 scripts/obs-list-excel.py --region=cn-north-4 --output=/tmp/obs-test.xlsx --max-keys=10",
+      "expected": "success"
+    },
+    {
+      "id": "TC-05",
+      "name": "Real API: Check generated Excel file",
+      "command": "python3 -c \"import openpyxl; wb=openpyxl.load_workbook('/tmp/obs-test.xlsx'); print(wb.sheetnames)\"",
+      "expected": "Buckets Summary"
+    }
+  ]
+}
