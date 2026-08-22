@@ -299,7 +299,7 @@ See [Task: Shared Domains](references/task-shared-domains.md) for detailed workf
 hcloud SWR ListRepoDomains --namespace=pancake --repository=openclaw-sandbox --cli-region=cn-north-4
 
 # Create a shared download domain
-# --access_domain: Huawei Cloud IAM domain name (tenant name/account name) of the target account to share with
+# --access_domain: Huawei Cloud IAM domain name (tenant name/account name) of the target account to share with. Must be another Huawei Cloud account's IAM domain (e.g., HW_12345678); cannot be a custom domain or the current account itself.
 # --deadline: Expiration time in UTC format; use "forever" for permanent access
 # --permit: Permission type; currently only "read" is supported
 hcloud SWR CreateRepoDomains --namespace=pancake --repository=openclaw-sandbox --access_domain=<iam-domain-name> --deadline=forever --permit=read --cli-region=cn-north-4
@@ -315,7 +315,7 @@ hcloud SWR DeleteRepoDomains --namespace=pancake --repository=openclaw-sandbox -
 ```
 
 **Shared Domain Parameters**:
-- `--access_domain`: The Huawei Cloud IAM domain name (shared tenant name) of the account you want to share the image with. This is the target account's domain name, not a custom domain identifier.
+- `--access_domain`: The Huawei Cloud IAM domain name (shared tenant name) of the account you want to share the image with. **Must be another Huawei Cloud account's IAM domain (tenant name)**, e.g., `HW_12345678`. Cannot be a custom domain (like `example.com`) and cannot be the current account itself (cannot share with yourself).
 - `--deadline`: Expiration time in UTC format (e.g., `2025-12-31T23:59:59Z`). Use `forever` for permanent access.
 - `--permit`: Permission type. Currently only `read` (download/pull) is supported.
 - `--description` (optional): Human-readable description of the shared domain.
@@ -390,7 +390,7 @@ hcloud SWR ListReferences --namespace=pancake --repository=openclaw-sandbox --cl
 | ----------------- | -------- | ------------------------------------ | ---------------------------------------------- |
 | `--namespace`     | Yes      | Namespace name                       | Must exist                                     |
 | `--repository`    | Yes      | Repository name                      | Must exist                                     |
-| `--access_domain` | Yes      | Huawei Cloud IAM domain name (shared tenant name) | Target account's domain name, not a custom identifier |
+| `--access_domain` | Yes      | Huawei Cloud IAM domain name (shared tenant name) | **Must be another account's IAM domain** (e.g., `HW_12345678`). Cannot be a custom domain or the current account. |
 | `--deadline`      | Yes (create/update) | Expiration time           | UTC format (e.g., `2025-12-31T23:59:59Z`) or `forever` |
 | `--permit`        | Yes (create/update) | Permission type          | `read` (only supported value)                  |
 | `--description`   | No       | Domain description                   | Default: empty string                          |
